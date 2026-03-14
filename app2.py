@@ -631,8 +631,9 @@ with T_CHART:
         st.markdown("<hr style='border-color:#111;margin:4px 0'>", unsafe_allow_html=True)
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  TAB 4 â€” FINANCE CALCULATOR (Options + CFA formulas)
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ════════════════════════════════════════════════════════════
+#  TAB 4 — FINANCE CALCULATOR (Options + CFA formulas)
+# ════════════════════════════════════════════════════════════
 with T_CALC:
     st.markdown(
         "<div style='background:linear-gradient(135deg,#1E0A2E,#021B2E,#022C22);"
@@ -640,15 +641,16 @@ with T_CALC:
         "<span style='font-size:22px;font-weight:bold;font-family:monospace;"
         "background:linear-gradient(90deg,#A855F7,#06B6D4,#10B981);"
         "-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"
-        "ðŸ“ FINANCE CALCULATOR</span>"
+        "📐 FINANCE CALCULATOR</span>"
         "<div style='color:#555;font-family:monospace;font-size:11px;margin-top:4px'>"
-        "Options Pricing (BS Â· MC Â· BT) + CFA Key Formulas Quick Reference"
+        "Options Pricing (BS · MC · BT) + CFA Key Formulas & Quick Calculators"
         "</div></div>",
         unsafe_allow_html=True
     )
 
-    calc_t1, calc_t2 = st.tabs(["âš™ï¸ OPTIONS PRICER", "ðŸ“š CFA FORMULA SHEET"])
+    calc_t1, calc_t2 = st.tabs(["⚙️ OPTIONS PRICER", "📚 CFA FORMULA SHEET"])
 
+    # ── OPTIONS PRICER TAB ───────────────────────────────────
     with calc_t1:
         def panel_hdr(theme, subtitle):
             return (
@@ -663,6 +665,8 @@ with T_CALC:
             )
 
         oc1, oc2, oc3 = st.columns(3)
+
+        # Black–Scholes
         with oc1:
             st.markdown(panel_hdr(BS, "Closed-form analytic"), unsafe_allow_html=True)
             st.markdown(
@@ -670,17 +674,18 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            bs_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="bs_St", format="%.2f")
-            bs_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="bs_K",  format="%.2f")
-            bs_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="bs_s", format="%.2f")
-            bs_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="bs_T", format="%.2f")
-            bs_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bs_r", format="%.3f")
-            bs_q  = st.slider("ðŸ’° q Dividend",    0.0,  0.20, 0.0,  0.005, key="bs_q", format="%.3f")
+            bs_St = st.number_input("📍 Spot",   0.01, value=100.0, step=1.0,  key="bs_St", format="%.2f")
+            bs_K  = st.number_input("🎯 Strike", 0.01, value=100.0, step=1.0,  key="bs_K",  format="%.2f")
+            bs_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.20, 0.01, key="bs_s", format="%.2f")
+            bs_T  = st.number_input("⏳ T (years)", 0.01, value=1.0, step=0.25, key="bs_T", format="%.2f")
+            bs_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.03, 0.005, key="bs_r", format="%.3f")
+            bs_q  = st.slider("💰 q Dividend",    0.0,  0.20, 0.00, 0.005, key="bs_q", format="%.3f")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='bs-btn'>", unsafe_allow_html=True)
-            run_bs_btn = st.button("ðŸ”® Price (BS)", key="run_bs", use_container_width=True)
+            run_bs_btn = st.button("🔮 Price (BS)", key="run_bs", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
+        # Monte Carlo
         with oc2:
             st.markdown(panel_hdr(MC, "Stochastic simulation"), unsafe_allow_html=True)
             st.markdown(
@@ -688,17 +693,18 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            mc_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="mc_St", format="%.2f")
-            mc_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="mc_K",  format="%.2f")
-            mc_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="mc_s", format="%.2f")
-            mc_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="mc_T", format="%.2f")
-            mc_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="mc_r", format="%.3f")
-            mc_rp = st.select_slider("ðŸŽ° Reps", [1000,5000,10000,50000,100000], value=10000, key="mc_rp")
+            mc_St = st.number_input("📍 Spot",   0.01, value=100.0, step=1.0,  key="mc_St", format="%.2f")
+            mc_K  = st.number_input("🎯 Strike", 0.01, value=100.0, step=1.0,  key="mc_K",  format="%.2f")
+            mc_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.20, 0.01, key="mc_s", format="%.2f")
+            mc_T  = st.number_input("⏳ T (years)", 0.01, value=1.0, step=0.25, key="mc_T", format="%.2f")
+            mc_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.03, 0.005, key="mc_r", format="%.3f")
+            mc_rp = st.select_slider("🎰 Reps", [1000, 5000, 10000, 50000, 100000], value=10000, key="mc_rp")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='mc-btn'>", unsafe_allow_html=True)
-            run_mc_btn = st.button("ðŸŽ² Price (MC)", key="run_mc", use_container_width=True)
+            run_mc_btn = st.button("🎲 Price (MC)", key="run_mc", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
+        # Binomial Tree
         with oc3:
             st.markdown(panel_hdr(BTH, "Discrete lattice"), unsafe_allow_html=True)
             st.markdown(
@@ -706,43 +712,49 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            bt_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="bt_St", format="%.2f")
-            bt_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="bt_K",  format="%.2f")
-            bt_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="bt_s", format="%.2f")
-            bt_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="bt_T", format="%.2f")
-            bt_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bt_r", format="%.3f")
-            bt_N  = st.select_slider("ðŸŒ¿ Steps N", [50,100,200,500,1000], value=100, key="bt_N")
+            bt_St = st.number_input("📍 Spot",   0.01, value=100.0, step=1.0,  key="bt_St", format="%.2f")
+            bt_K  = st.number_input("🎯 Strike", 0.01, value=100.0, step=1.0,  key="bt_K",  format="%.2f")
+            bt_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.20, 0.01, key="bt_s", format="%.2f")
+            bt_T  = st.number_input("⏳ T (years)", 0.01, value=1.0, step=0.25, key="bt_T", format="%.2f")
+            bt_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.03, 0.005, key="bt_r", format="%.3f")
+            bt_N  = st.select_slider("🌿 Steps N", [50, 100, 200, 500, 1000], value=200, key="bt_N")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='bt-btn'>", unsafe_allow_html=True)
-            run_bt_btn = st.button("ðŸŒ³ Price (BT)", key="run_bt", use_container_width=True)
+            run_bt_btn = st.button("🌳 Price (BT)", key="run_bt", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        _, mid_col, _ = st.columns([2,3,2])
+        _, mid_col, _ = st.columns([2, 3, 2])
         with mid_col:
             st.markdown("<div class='all-btn'>", unsafe_allow_html=True)
-            run_all = st.button("âš¡ COMPARE ALL 3 MODELS", key="run_all", use_container_width=True)
+            run_all = st.button("⚡ COMPARE ALL 3 MODELS", key="run_all", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         rb = rm = rt = None
         if run_bs_btn or run_all:
-            try: rb = run_bs(bs_St, bs_K, bs_s, bs_T, bs_r, bs_q)
-            except Exception as e: st.error(f"BS Error: {e}")
+            try:
+                rb = run_bs(bs_St, bs_K, bs_s, bs_T, bs_r, bs_q)
+            except Exception as e:
+                st.error(f"BS Error: {e}")
         if run_mc_btn or run_all:
-            try: rm = run_mc(mc_St, mc_K, mc_s, mc_T, mc_r, mc_rp)
-            except Exception as e: st.error(f"MC Error: {e}")
+            try:
+                rm = run_mc(mc_St, mc_K, mc_s, mc_T, mc_r, mc_rp)
+            except Exception as e:
+                st.error(f"MC Error: {e}")
         if run_bt_btn or run_all:
-            try: rt = run_bt(bt_St, bt_K, bt_s, bt_T, bt_r, bt_N)
-            except Exception as e: st.error(f"BT Error: {e}")
+            try:
+                rt = run_bt(bt_St, bt_K, bt_s, bt_T, bt_r, bt_N)
+            except Exception as e:
+                st.error(f"BT Error: {e}")
 
         def show_opt_res(res, theme, name):
             cards = (
-                themed_card("d1",      res["d1"],  theme, "prob factor")
-                + themed_card("d2",      res["d2"],  theme, "risk-neutral")
-                + themed_card("DIG CALL",res["dc"],  theme, "binary call")
-                + themed_card("SHR CALL",res["sc"],  theme, "vanilla call")
-                + themed_card("DIG PUT", res["dp"],  theme, "binary put")
-                + themed_card("SHR PUT", res["sp"],  theme, "vanilla put")
+                themed_card("d1",       res["d1"], theme, "prob factor")
+                + themed_card("d2",     res["d2"], theme, "risk-neutral")
+                + themed_card("DIG CALL", res["dc"], theme, "binary call")
+                + themed_card("SHR CALL", res["sc"], theme, "vanilla call")
+                + themed_card("DIG PUT",  res["dp"], theme, "binary put")
+                + themed_card("SHR PUT",  res["sp"], theme, "vanilla put")
             )
             st.markdown(
                 f"<div style='background:{theme['dark']};border:1px solid {theme['border']};"
@@ -756,41 +768,96 @@ with T_CALC:
         if rb or rm or rt:
             r1, r2, r3 = st.columns(3)
             with r1:
-                if rb: show_opt_res(rb, BS, "Black-Scholes")
+                if rb:
+                    show_opt_res(rb, BS, "Black-Scholes")
             with r2:
-                if rm: show_opt_res(rm, MC, "Monte Carlo")
+                if rm:
+                    show_opt_res(rm, MC, "Monte Carlo")
             with r3:
-                if rt: show_opt_res(rt, BTH, "Binomial Tree")
+                if rt:
+                    show_opt_res(rt, BTH, "Binomial Tree")
 
             if rb and rm and rt:
-                cats = ["Digital Call","Share Call","Digital Put","Share Put"]
+                cats = ["Digital Call", "Share Call", "Digital Put", "Share Put"]
                 fig = go.Figure()
-                for res, theme, nm in [(rb,BS,"BS"),(rm,MC,"MC"),(rt,BTH,"BT")]:
+                for res, theme, nm in [(rb, BS, "BS"), (rm, MC, "MC"), (rt, BTH, "BT")]:
                     fig.add_trace(go.Bar(
-                        name=f"{theme['emoji']} {nm}", x=cats,
-                        y=[res["dc"],res["sc"],res["dp"],res["sp"]],
-                        marker_color=theme["primary"], opacity=0.85
+                        name=f"{theme['emoji']} {nm}",
+                        x=cats,
+                        y=[res["dc"], res["sc"], res["dp"], res["sp"]],
+                        marker_color=theme["primary"],
+                        opacity=0.85
                     ))
-                fig.update_layout(**PLOT_CFG, barmode="group", height=350,
+                fig.update_layout(
+                    **PLOT_CFG, barmode="group", height=350,
                     legend=dict(orientation="h", x=0, y=1.12,
-                                font=dict(family="Courier New",size=11), bgcolor="rgba(0,0,0,0)"))
-                fig.update_xaxes(gridcolor="#111"); fig.update_yaxes(gridcolor="#111")
+                                font=dict(family="Courier New", size=11),
+                                bgcolor="rgba(0,0,0,0)")
+                )
+                fig.update_xaxes(gridcolor="#111")
+                fig.update_yaxes(gridcolor="#111")
                 st.plotly_chart(fig, use_container_width=True)
 
             if rm and "ST" in rm:
-                fig = go.Figure(go.Histogram(x=rm["ST"], nbinsx=100,
-                    marker_color=MC["primary"], opacity=0.75))
-                fig.add_vline(x=mc_K, line=dict(color="#FFD700",dash="dot",width=2),
-                    annotation_text=f"K={mc_K}", annotation_font_color="#FFD700")
-                fig.add_vline(x=mc_St, line=dict(color="#aaa",dash="dot",width=1.5),
-                    annotation_text=f"St={mc_St}", annotation_font_color="#aaa")
-                fig.update_layout(**PLOT_CFG, height=320,
-                    title=dict(text="ðŸŽ² MC Terminal Price Distribution",
-                               font=dict(family="Courier New",size=12,color=MC["primary"]),x=0))
-                fig.update_xaxes(gridcolor="#111"); fig.update_yaxes(gridcolor="#111")
+                fig = go.Figure(go.Histogram(
+                    x=rm["ST"], nbinsx=100,
+                    marker_color=MC["primary"], opacity=0.75
+                ))
+                fig.add_vline(
+                    x=mc_K,
+                    line=dict(color="#FFD700", dash="dot", width=2),
+                    annotation_text=f"K={mc_K}", annotation_font_color="#FFD700"
+                )
+                fig.add_vline(
+                    x=mc_St,
+                    line=dict(color="#aaa", dash="dot", width=1.5),
+                    annotation_text=f"St={mc_St}", annotation_font_color="#aaa"
+                )
+                fig.update_layout(
+                    **PLOT_CFG, height=320,
+                    title=dict(
+                        text="🎲 MC Terminal Price Distribution",
+                        font=dict(family="Courier New", size=12, color=MC["primary"]),
+                        x=0
+                    )
+                )
+                fig.update_xaxes(gridcolor="#111")
+                fig.update_yaxes(gridcolor="#111")
                 st.plotly_chart(fig, use_container_width=True)
 
+    # ── CFA FORMULA SHEET TAB (with calculators) ──────────────
     with calc_t2:
+
+        st.markdown("### Quick CFA Calculators")
+
+        col_fv, col_pv, col_sharpe = st.columns(3)
+
+        with col_fv:
+            st.caption("Future Value: FV = PV × (1 + r)^n")
+            pv = st.number_input("PV", value=1000.0, key="cfa_pv")
+            r  = st.number_input("Rate r", value=0.05, format="%.4f", key="cfa_r")
+            n  = st.number_input("Periods n", value=10, step=1, key="cfa_n")
+            fv = pv * (1 + r) ** n
+            st.write(f"FV = {fv:,.2f}")
+
+        with col_pv:
+            st.caption("Present Value: PV = FV / (1 + r)^n")
+            fv2 = st.number_input("FV", value=1000.0, key="cfa_fv2")
+            r2  = st.number_input("Rate r ", value=0.05, format="%.4f", key="cfa_r2")
+            n2  = st.number_input("Periods n ", value=5, step=1, key="cfa_n2")
+            pv2 = fv2 / ((1 + r2) ** n2)
+            st.write(f"PV = {pv2:,.2f}")
+
+        with col_sharpe:
+            st.caption("Sharpe Ratio: (Rp − Rf) / σp")
+            rp = st.number_input("Portfolio return Rp", value=0.08, format="%.4f", key="cfa_rp")
+            rf = st.number_input("Risk‑free Rf", value=0.03, format="%.4f", key="cfa_rf")
+            sp = st.number_input("σp", value=0.15, format="%.4f", key="cfa_sp")
+            sharpe = (rp - rf) / sp if sp != 0 else 0.0
+            st.write(f"Sharpe = {sharpe:.3f}")
+
+        st.markdown("---")
+
         def cfa_section(title, color, items):
             rows = "".join(
                 f"<tr><td style='color:#aaa;padding:6px 10px;font-size:12px;"
@@ -808,87 +875,87 @@ with T_CALC:
             )
 
         cf1, cf2 = st.columns(2)
+
         with cf1:
-            st.markdown(cfa_section("ðŸ“Š QUANTITATIVE METHODS", "#A855F7", [
-                ("Future Value",       "FV = PV Ã— (1 + I/Y)á´º"),
-                ("Present Value",      "PV = FV / (1 + I/Y)á´º"),
+            st.markdown(cfa_section("📊 QUANTITATIVE METHODS", "#A855F7", [
+                ("Future Value",       "FV = PV × (1 + I/Y)^N"),
+                ("Present Value",      "PV = FV / (1 + I/Y)^N"),
                 ("Perpetuity PV",      "PV = PMT / discount rate"),
-                ("HPR",                "Râ‚œ = (Pâ‚œ - Pâ‚œâ‚‹â‚ + Dâ‚œ) / Pâ‚œâ‚‹â‚"),
-                ("Geometric Mean Ret", "RÌ„G = [(1+Râ‚)Ã—â€¦Ã—(1+Râ‚™)]^(1/n) - 1"),
-                ("Sharpe Ratio",       "(rÌ„p - rf) / Ïƒp"),
-                ("CV",                 "s / XÌ„"),
-                ("Z-Score",            "z = (x - Î¼) / Ïƒ"),
-                ("Confidence Interval","XÌ„ Â± zÎ±/2 Ã— (Ïƒ/âˆšn)"),
-                ("Correlation",        "corr(Ri,Rj) = COV(Ri,Rj) / [Ïƒ(Ri)Ã—Ïƒ(Rj)]"),
+                ("HPR",                "R_t = (P_t − P_{t−1} + D_t) / P_{t−1}"),
+                ("Geometric Mean Ret", "R_G = [(1+R_1)…(1+R_n)]^(1/n) − 1"),
+                ("Sharpe Ratio",       "(r_p − r_f) / σ_p"),
+                ("CV",                 "s / X̄"),
+                ("Z‑Score",            "z = (x − μ) / σ"),
+                ("Confidence Interval","X̄ ± z_{α/2} × (σ/√n)"),
+                ("Correlation",        "corr(R_i,R_j) = COV(R_i,R_j) / [σ(R_i)σ(R_j)]"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("ðŸ’¼ CORPORATE FINANCE", "#F59E0B", [
-                ("WACC",               "wdÃ—kdÃ—(1-t) + wpsÃ—kps + wceÃ—ke"),
-                ("Cost of Equity CAPM","ke = RFR + Î²Ã—(Rmkt - RFR)"),
-                ("Cost of Equity DDM", "ke = Dâ‚/Pâ‚€ + g"),
-                ("NPV",                "CFâ‚€ + CFâ‚/(1+k) + â€¦ + CFâ‚™/(1+k)â¿"),
-                ("IRR",                "Discount rate â†’ NPV = 0"),
-                ("Breakeven Sales",    "(Fixed op + financing costs) / (P - VC/unit)"),
-                ("DOL",                "%Î”EBIT / %Î”Sales"),
-                ("DFL",                "%Î”Net Income / %Î”EBIT"),
-                ("ROE (DuPont)",       "(Net Income/Sales) Ã— (Sales/Assets) Ã— (Assets/Equity)"),
-                ("g (growth rate)",    "g = RR Ã— ROE"),
+            st.markdown(cfa_section("💼 CORPORATE FINANCE", "#F59E0B", [
+                ("WACC",               "w_d·k_d·(1−t) + w_ps·k_ps + w_ce·k_e"),
+                ("Cost of Equity CAPM","k_e = RFR + β(R_m − RFR)"),
+                ("Cost of Equity DDM", "k_e = D_1/P_0 + g"),
+                ("NPV",                "CF_0 + Σ CF_t/(1+k)^t"),
+                ("IRR",                "Discount rate s.t. NPV = 0"),
+                ("Breakeven Sales",    "(Fixed op + financing costs) / (P − VC/unit)"),
+                ("DOL",                "%ΔEBIT / %ΔSales"),
+                ("DFL",                "%ΔNet Income / %ΔEBIT"),
+                ("ROE (DuPont)",       "(NI/Sales) × (Sales/Assets) × (Assets/Equity)"),
+                ("g (growth rate)",    "g = RR × ROE"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("ðŸ¦ FIXED INCOME", "#06B6D4", [
-                ("Bond Price",         "PV = Î£[C/(1+r)áµ—] + F/(1+r)á´º"),
+            st.markdown(cfa_section("🏦 FIXED INCOME", "#06B6D4", [
+                ("Bond Price",         "PV = Σ[C/(1+r)^t] + F/(1+r)^N"),
                 ("Current Yield",      "Annual coupon / Price"),
-                ("YTM approx",         "(C + (F-P)/N) / ((F+P)/2)"),
-                ("Duration (Macaulay)","Î£[t Ã— PV(CFt)] / Bond Price"),
-                ("Modified Duration",  "Macaulay D / (1+r)"),
-                ("%Î”Price (Duration)", "â‰ˆ -ModDur Ã— Î”y"),
-                ("Convexity adj.",     "Â½ Ã— Convexity Ã— (Î”y)Â²"),
-                ("Forward Rate",       "(1+Sâ‚™)â¿ = (1+Sâ‚™â‚‹â‚)â¿â»Â¹ Ã— (1+fn)"),
-                ("Spot-Forward",       "(1+Sâ‚‚)Â² = (1+Sâ‚)(1+1y1y)"),
-                ("OAS",                "Z-spread adjusted for embedded options"),
+                ("YTM approx",         "(C + (F−P)/N) / ((F+P)/2)"),
+                ("Duration (Mac)",     "Σ[t × PV(CF_t)] / Bond price"),
+                ("Modified Duration",  "Mac Dur / (1+r)"),
+                ("%ΔPrice (Dur)",      "≈ −ModDur × Δy"),
+                ("Convexity adj.",     "½ × Convexity × (Δy)^2"),
+                ("Forward Rate",       "(1+S_n)^n = (1+S_{n−1})^{n−1}(1+f_n)"),
+                ("Spot‑Forward",       "(1+S_2)^2 = (1+S_1)(1+1y1y)"),
+                ("OAS",                "Z‑spread adjusted for embedded options"),
             ]), unsafe_allow_html=True)
 
         with cf2:
-            st.markdown(cfa_section("ðŸ“ˆ EQUITY INVESTMENTS", "#10B981", [
-                ("Gordon Growth Model", "Vâ‚€ = Dâ‚ / (ke - gc)"),
-                ("Multi-stage DDM",     "Vâ‚€ = Î£ Dâ‚™/(1+ke)â¿ + Pâ‚™/(1+ke)â¿"),
-                ("Leading P/E",         "Price / Forecast EPS next 12mo"),
-                ("Trailing P/E",        "Price / EPS previous 12mo"),
+            st.markdown(cfa_section("📈 EQUITY INVESTMENTS", "#10B981", [
+                ("Gordon Growth Model", "V_0 = D_1 / (k_e − g_c)"),
+                ("Multi‑stage DDM",     "V_0 = Σ D_t/(1+k_e)^t + P_n/(1+k_e)^n"),
+                ("Leading P/E",         "Price / forecast EPS next 12m"),
+                ("Trailing P/E",        "Price / EPS previous 12m"),
                 ("P/B",                 "Price / Book Value per share"),
-                ("EV/EBITDA",           "(Mkt Cap + Debt - Cash) / EBITDA"),
-                ("Basic EPS",           "(Net Income - Pref Div) / Wtd Avg Shares"),
-                ("Diluted EPS",         "Adj. income / (Wtd Avg + Dilutive shares)"),
-                ("CAPM",               "E(Ri) = RFR + Î²áµ¢Ã—[E(Rmkt) - RFR]"),
-                ("Beta (unlever)",      "Î²asset = Î²equity / [1+(1-t)Ã—D/E]"),
+                ("EV/EBITDA",           "(Mkt Cap + Debt − Cash) / EBITDA"),
+                ("Basic EPS",           "(NI − Pref Div) / Wtd Avg Shares"),
+                ("Diluted EPS",         "Adj NI / (Wtd Avg + dilutive shares)"),
+                ("CAPM",                "E(R_i) = RFR + β_i[E(R_m) − RFR]"),
+                ("Unlevered β",         "β_asset = β_equity / [1 + (1−t)D/E]"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("ðŸ”— PORTFOLIO MANAGEMENT", "#EC4899", [
-                ("E(Rp) 2-stock",       "wAÃ—E(RA) + wBÃ—E(RB)"),
-                ("Var(Rp) 2-stock",     "wAÂ²ÏƒAÂ² + wBÂ²ÏƒBÂ² + 2wAwBÏƒAÏƒBÏAB"),
+            st.markdown(cfa_section("🔗 PORTFOLIO MANAGEMENT", "#EC4899", [
+                ("E(R_p) 2‑asset",      "w_AE(R_A) + w_BE(R_B)"),
+                ("Var(R_p) 2‑asset",    "w_A^2σ_A^2 + w_B^2σ_B^2 + 2w_Aw_Bσ_Aσ_Bρ_AB"),
                 ("Total Risk",          "Systematic + Unsystematic"),
-                ("Sharpe",              "(rp - rf) / Ïƒp  [total risk]"),
-                ("Treynor",             "(rp - rf) / Î²p  [systematic risk]"),
-                ("Jensen's Alpha",      "Î±p = rp - [rf + Î²p(rm - rf)]"),
-                ("M-squared",           "(rp - rf) Ã— (Ïƒm/Ïƒp) - (rm - rf)"),
-                ("Roy Safety-First",    "SFR = (rp - rTarget) / Ïƒp"),
-                ("Information Ratio",   "(rp - rB) / Tracking Error"),
-                ("CAL Slope",           "(E(Rp) - Rf) / Ïƒp"),
+                ("Sharpe",              "(r_p − r_f) / σ_p"),
+                ("Treynor",             "(r_p − r_f) / β_p"),
+                ("Jensen's Alpha",      "α_p = r_p − [r_f + β_p(r_m − r_f)]"),
+                ("M‑squared",           "(r_p − r_f)(σ_m/σ_p) − (r_m − r_f)"),
+                ("Roy Safety‑First",    "SFR = (r_p − r_T) / σ_p"),
+                ("Information Ratio",   "(r_p − r_B) / Tracking Error"),
+                ("CAL Slope",           "(E(R_p) − R_f) / σ_p"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("âš™ï¸ DERIVATIVES", "#F59E0B", [
-                ("Put-Call Parity",     "c + X/(1+Rf)áµ€ = S + p"),
-                ("BS d1",               "[ln(S/K)+(r+ÏƒÂ²/2)T] / (ÏƒâˆšT)"),
-                ("BS d2",               "d1 - ÏƒâˆšT"),
-                ("BS Call",             "SÃ—N(d1) - Keâ»Ê³áµ€Ã—N(d2)"),
-                ("BS Put",              "Keâ»Ê³áµ€Ã—N(-d2) - SÃ—N(-d1)"),
+            st.markdown(cfa_section("⚙️ DERIVATIVES", "#F59E0B", [
+                ("Put‑Call Parity",     "c + X/(1+R_f)^T = S + p"),
+                ("BS d1",               "[ln(S/K)+(r+σ^2/2)T] / (σ√T)"),
+                ("BS d2",               "d1 − σ√T"),
+                ("BS Call",             "S·N(d1) − Ke^{−rT}·N(d2)"),
+                ("BS Put",              "Ke^{−rT}·N(−d2) − S·N(−d1)"),
                 ("Delta Call",          "N(d1)"),
-                ("Delta Put",           "N(d1) - 1"),
-                ("Gamma",               "N'(d1) / (SÃ—ÏƒÃ—âˆšT)"),
-                ("Vega",                "SÃ—N'(d1)Ã—âˆšT"),
-                ("Forward Value",       "Vt = St - Fâ‚€(T)Ã—eâ»Ê³â½áµ€â»áµ—â¾"),
+                ("Delta Put",           "N(d1) − 1"),
+                ("Gamma",               "N'(d1) / (Sσ√T)"),
+                ("Vega",                "S·N'(d1)√T"),
+                ("Forward Value",       "V_t = S_t − F_0(T)e^{−r(T−t)}"),
             ]), unsafe_allow_html=True)
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 #  TAB 5 â€” CFO CALCULATORS
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_CFO:
