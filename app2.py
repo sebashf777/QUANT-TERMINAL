@@ -442,15 +442,25 @@ with T_SIG:
             price = qd["price"] if qd["price"] > 0 else float(c_s.iloc[-1])
 
             signals = []
-            signals.append(("â–² Above SMA20","#00FF41") if price > sma20 else ("â–¼ Below SMA20","#FF4444"))
-            signals.append(("â–² Above SMA50","#00FF41") if price > sma50 else ("â–¼ Below SMA50","#FF4444"))
-            signals.append(("ðŸ“ˆ MACD Bullish","#00FF41") if macd_l > sig_l else ("BEARISH 🐻","#FF4444"))
-            if rsi_val > 70:   signals.append(("ðŸ”´ RSI Overbought","#FF4444"))
-            elif rsi_val < 30: signals.append(("ðŸŸ¢ RSI Oversold","#00FF41"))
-            else:              signals.append((f"ðŸŸ¡ RSI Neutral {rsi_val:.1f}","#F59E0B"))
-            if price > bb_up:   signals.append(("ðŸ“Š Above BB Upper","#FF4444"))
-            elif price < bb_lo: signals.append(("ðŸ“Š Below BB Lower","#00FF41"))
-            else:               signals.append(("ðŸ“Š Inside BB","#06B6D4"))
+signals.append(("🔺 Above SMA20","#00FF41") if price > sma20 else ("🔻 Below SMA20","#FF4444"))
+signals.append(("🔺 Above SMA50","#00FF41") if price > sma50 else ("🔻 Below SMA50","#FF4444"))
+
+signals.append(("📈 MACD Bullish","#00FF41") if macd_l > sig_l else ("BEARISH 🐻","#FF4444"))
+
+if rsi_val > 70:
+    signals.append(("🔴 RSI Overbought","#FF4444"))
+elif rsi_val < 30:
+    signals.append(("🚨 RSI Oversold","#00FF41"))
+else:
+    signals.append((f"⚪ RSI Neutral {rsi_val:.1f}","#F59E0B"))
+
+if price > bb_up:
+    signals.append(("📊 Above BB Upper","#FF4444"))
+elif price < bb_lo:
+    signals.append(("📊 Below BB Lower","#00FF41"))
+else:
+    signals.append(("📊 Inside BB","#06B6D4"))
+
 
             bull = sum(1 for _, c2 in signals if "#00FF41" in c2)
             bear = sum(1 for _, c2 in signals if "#FF4444" in c2)
