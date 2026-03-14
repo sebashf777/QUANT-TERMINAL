@@ -1358,61 +1358,90 @@ with cfa_tab_der:
         st.write(f"Forward price F₀,T = {F0T:,.4f}")
         st.caption("FP₀,T = S₀ − PV(div);  F₀,T = FP₀,T(1+r)^T.")
 
-#  TAB 5 â€” CFO CALCULATORS
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TAB 5 — CFO CALCULATORS
+# ─────────────────────────────────────────────────────────────────────────────
 with T_CFO:
     st.markdown(
-        f"<h4 style='color:{CF['primary']};font-family:monospace'>ðŸ’¼ CFO FINANCIAL TOOLKIT</h4>",
+        f"<h4 style='color:{CF['primary']};font-family:monospace'>💼 CFO FINANCIAL TOOLKIT</h4>",
         unsafe_allow_html=True
     )
-    cfo1, cfo2 = st.tabs(["ðŸ“Š DCF VALUATION", "âš–ï¸ WACC CALCULATOR"])
+    cfo1, cfo2 = st.tabs(["📊 DCF VALUATION", "⚖️ WACC CALCULATOR"])
 
     with cfo1:
         st.markdown(
             f"<div style='background:{CF['dark']};border:1px solid {CF['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "ðŸ“Š DISCOUNTED CASH FLOW (DCF) VALUATION MODEL</div>"
+            "📊 DISCOUNTED CASH FLOW (DCF) VALUATION MODEL</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Projects FCFs and discounts at WACC Â· terminal value Â· equity intrinsic value Â· sensitivity table"
+            "Projects FCFs and discounts at WACC · terminal value · equity intrinsic value · sensitivity table"
             "</div></div>",
             unsafe_allow_html=True
         )
+
         d1a, d1b, d1c = st.columns(3)
+
         with d1a:
-            dcf_fcf    = st.number_input("ðŸ’µ Base FCF ($M)",      value=500.0, step=50.0, key="dcf_fcf",    format="%.1f")
-            dcf_gr1    = st.slider("ðŸ“ˆ Growth Yr 1-5 (%)",        0.0, 50.0, 15.0, 0.5, key="dcf_gr1",   format="%.1f")
-            dcf_gr2    = st.slider("ðŸ“ˆ Growth Yr 6-10 (%)",       0.0, 30.0, 8.0,  0.5, key="dcf_gr2",   format="%.1f")
+            dcf_fcf = st.number_input(
+                "💵 Base FCF ($M)", value=500.0, step=50.0, key="dcf_fcf", format="%.1f"
+            )
+            dcf_gr1 = st.slider(
+                "📈 Growth Yr 1-5 (%)", 0.0, 50.0, 15.0, 0.5, key="dcf_gr1", format="%.1f"
+            )
+            dcf_gr2 = st.slider(
+                "📈 Growth Yr 6-10 (%)", 0.0, 30.0, 8.0, 0.5, key="dcf_gr2", format="%.1f"
+            )
+
         with d1b:
-            dcf_tgr    = st.slider("â™¾ï¸ Terminal Growth (%)",      0.0, 5.0,  2.5,  0.1, key="dcf_tgr",   format="%.1f")
-            dcf_wacc   = st.slider("âš–ï¸ WACC (%)",                 1.0, 25.0, 10.0, 0.25,key="dcf_wacc",  format="%.2f")
-            dcf_debt   = st.number_input("ðŸ¦ Net Debt ($M)",      value=200.0, step=10.0, key="dcf_debt", format="%.1f")
+            dcf_tgr = st.slider(
+                "♾️ Terminal Growth (%)", 0.0, 5.0, 2.5, 0.1, key="dcf_tgr", format="%.1f"
+            )
+            dcf_wacc = st.slider(
+                "⚖️ WACC (%)", 1.0, 25.0, 10.0, 0.25, key="dcf_wacc", format="%.2f"
+            )
+            dcf_debt = st.number_input(
+                "🏦 Net Debt ($M)", value=200.0, step=10.0, key="dcf_debt", format="%.1f"
+            )
+
         with d1c:
-            dcf_shares = st.number_input("ðŸ“‹ Shares Out (M)",     value=100.0, step=5.0,  key="dcf_sh",   format="%.1f")
-            dcf_cash   = st.number_input("ðŸ’° Cash ($M)",          value=150.0, step=10.0, key="dcf_cash", format="%.1f")
-            dcf_mos    = st.slider("ðŸŽ¯ Margin of Safety (%)",     0.0, 40.0, 20.0, 5.0, key="dcf_mos",  format="%.0f")
+            dcf_shares = st.number_input(
+                "📊 Shares Out (M)", value=100.0, step=5.0, key="dcf_sh", format="%.1f"
+            )
+            dcf_cash = st.number_input(
+                "💰 Cash ($M)", value=150.0, step=10.0, key="dcf_cash", format="%.1f"
+            )
+            dcf_mos = st.slider(
+                "🎯 Margin of Safety (%)", 0.0, 40.0, 20.0, 5.0, key="dcf_mos", format="%.0f"
+            )
 
         st.markdown("<div class='cf-btn'>", unsafe_allow_html=True)
-        run_dcf = st.button("ðŸ’¼ Run DCF", key="run_dcf")
+        run_dcf = st.button("💼 Run DCF", key="run_dcf")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_dcf:
-            wacc_d = dcf_wacc/100; tgr_d = dcf_tgr/100
-            gr1_d  = dcf_gr1/100;  gr2_d = dcf_gr2/100
-            fcfs = []; fcf_v = dcf_fcf
-            for yr in range(1, 11):
-                fcf_v *= (1+gr1_d) if yr<=5 else (1+gr2_d)
-                pv = fcf_v/(1+wacc_d)**yr
-                fcfs.append((yr, fcf_v, pv))
-            tv    = fcfs[-1][1]*(1+tgr_d)/(wacc_d-tgr_d) if wacc_d > tgr_d else 0
-            pv_tv = tv/(1+wacc_d)**10
-            pv_f  = sum(r[2] for r in fcfs)
-            ev    = pv_f + pv_tv
-            eq    = ev - dcf_debt + dcf_cash
-            intr  = eq/dcf_shares if dcf_shares > 0 else 0
-            mos_p = intr*(1-dcf_mos/100)
+            wacc_d = dcf_wacc / 100
+            tgr_d = dcf_tgr / 100
+            gr1_d = dcf_gr1 / 100
+            gr2_d = dcf_gr2 / 100
 
-            v1,v2,v3,v4,v5 = st.columns(5)
+            fcfs = []
+            fcf_v = dcf_fcf
+
+            for yr in range(1, 11):
+                fcf_v *= (1 + gr1_d) if yr <= 5 else (1 + gr2_d)
+                pv = fcf_v / (1 + wacc_d) ** yr
+                fcfs.append((yr, fcf_v, pv))
+
+            tv = fcfs[-1][1] * (1 + tgr_d) / (wacc_d - tgr_d) if wacc_d > tgr_d else 0
+            pv_tv = tv / (1 + wacc_d) ** 10
+            pv_f = sum(r[2] for r in fcfs)
+            ev = pv_f + pv_tv
+            eq = ev - dcf_debt + dcf_cash
+            intr = eq / dcf_shares if dcf_shares > 0 else 0
+            mos_p = intr * (1 - dcf_mos / 100)
+
+            v1, v2, v3, v4, v5 = st.columns(5)
+
             def vbox(col, label, val, sub="", color=None):
                 c = color or CF["primary"]
                 col.markdown(
@@ -1424,6 +1453,7 @@ with T_CFO:
                     "</div>",
                     unsafe_allow_html=True
                 )
+
             vbox(v1,"PV of FCFs",    f"${pv_f:,.0f}M", "10-year DCFs")
             vbox(v2,"PV Terminal",   f"${pv_tv:,.0f}M",f"TV={tv:,.0f}M")
             vbox(v3,"Enterprise Val",f"${ev:,.0f}M",   "EV=PV(FCF)+PV(TV)")
