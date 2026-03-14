@@ -546,7 +546,8 @@ with T_SIG:
                         except: continue
         else:
             st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period.")
-          # ════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════
 #  TAB 3 — CHART ANALYZER (up to 3 tickers)
 # ════════════════════════════════════════════════════════════
 with T_CHART:
@@ -1049,7 +1050,6 @@ with T_CFO:
             wbox(wc4,"Equity Weight", f"{E_w:.1%}",        f"${wacc_e:,.0f}M")
             wbox(wc5,"Debt Weight",   f"{D_w:.1%}",        f"${wacc_d_v:,.0f}M")
 
-            # ── FIXED: build chart WITHOUT row/col on add_vline for subplots ──
             fig = make_subplots(rows=1, cols=2, specs=[[{"type":"pie"},{"type":"scatter"}]])
             fig.add_trace(go.Pie(
                 labels=["Equity","Debt"], values=[wacc_e, wacc_d_v],
@@ -1062,7 +1062,6 @@ with T_CFO:
                 x=betas_arr, y=[w*100 for w in wacc_arr],
                 line=dict(color=CF["primary"],width=2.5), name="WACC vs β"
             ), row=1, col=2)
-            # Add current beta as a dot (avoids add_vline row/col bug)
             curr_wacc = E_w*(wacc_rf/100 + wacc_beta*(wacc_erp/100)) + D_w*Rd*(1-Tc)
             fig.add_trace(go.Scatter(
                 x=[wacc_beta], y=[curr_wacc*100],
@@ -1157,5 +1156,165 @@ with T_QUANT:
                 rbox(rc6,"Sortino",    f"{sortino:.3f}", "downside only")
 
                 rc7,rc8,rc9,rc10 = st.columns(4)
-                rbox(rc7, "Ann Return",   f"{ann_r:.2%}", "", "#00FF41" if ann_r)
+                rbox(rc7, "Ann Return",   f"{ann_r:.2%}", "", "#00FF41" if ann_r>=0 else "#FF4444")
+                rbox(rc8, "Ann Vol",      f"{ann_v:.2%}")
+                rbox(rc9, "Max Drawdown", f"{mdd:.1f}%", "peak-to-trough", "#FF4444")
+                rbox(rc10,"Calmar",       f"{calmar:.3f}")
 
+                fig = make_subplots(rows=2, cols=1, shared_xaxes=False,
+                                    row_heights=[0.55,0.45], vertical_spacing=0.07)
+                fig.add_trace(go.Scatter(
+                    x=df_v.index, y=df_v["Close"],
+                    line=dict(color=QT["primary"],width=1.5),
+                    name=f"{var_tk} Price"
+                ), row=1, col=1)
+                svc = df_v["Close"].cummax()
+                fig.add_trace(go.Scatter(
+                    x=df_v.index, y=svc,
+                    line=dict(color="#444",width=1, dash="dot"),
+                    name="Rolling High"
+                ), row=1, col=1)
+                fig2_rets = rets.copy()
+                fig.add_trace(go.Histogram(
+                    x=fig2_rets, nbinsx=60,
+                    marker_color=QT["primary"], opacity=0.75,
+                    name="Daily Returns"
+                ), row=2, col=1)
+                thr = np.percentile(fig2_rets,(1-var_conf)*100)
+                fig.add_vline(x=thr, line=dict(color="#FF4444",dash="dash",width=2),
+                              annotation_text=f"VaR cutoff {thr:.2%}", annotation_font_color="#FF8888")
+                fig.update_layout(**PLOT_CFG, height=480,
+                    legend=dict(orientation="h", x=0, y=1.08,
+                                font=dict(family="Courier New",size=10), bgcolor="rgba(0,0,0,0)"))
+                fig.update_xaxes(gridcolor="#111", row=1,col=1); fig.update_yaxes(gridcolor="#111", row=1,col=1)
+                fig.update_xaxes(gridcolor="#111", row=2,col=1, title_text="Daily Returns"); 
+                fig.update_yaxes(gridcolor="#111", row=2,col=1, title_text="Frequency")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("Not enough data for VaR calculation. Try a different ticker or longer period.")
+
+    # ── Markowitz ────────────────────────────────────────────
+    with q2tab:
+        st.markdown(
+            f"<div style='background:{QT['dark']};border:1px solid {QT['border']};"
+            "border-radius:8px;padding:14px;margin-bottom:14px'>"
+            f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
+            "🔗 MEAN-VARIANCE PORTFOLIO OPTIMIZER — Efficient Frontier</div>"
+            "<div style='color:#555;font-family:monospace;font-size:11px'>"
+            "Upload tickers, estimate return/cov, compute min variance & max Sharpe portfolios, plot frontier"
+            "</div></div>",
+            unsafe_allow_html=True
+        )
+
+        mq1, mq2 = st.columns([3,2])
+        with mq1:
+            tickers_str = st.text_input(
+                "📋 Tickers (comma-separated)", 
+                value="SPY, QQQ, IWM, EFA, EEM, TLT",
+                key="m_tks"
+            )
+            per_m = st.selectbox("📅 Lookback", ["1y","3y","5y"], index=1, key="m_per")
+        with mq2:
+            rf_m = st.slider("🏛️ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="m_rf", format="%.1f")
+            pts_m= st.slider("📈 Frontier Points", 20, 200, 80, 10, key="m_pts")
+
+        st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
+        run_mpt = st.button("🔗 Run Markowitz Optimization", key="run_mpt")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if run_mpt:
+            tks = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
+            if len(tks) < 2:
+                st.warning("Please enter at least two tickers."); 
+            else:
+                with st.spinner("Downloading price history and computing stats..."):
+                    data = {}
+                    for tk in tks:
+                        df = fetch_ohlcv(tk, per_m)
+                        if df.empty or len(df)<60: 
+                            continue
+                        data[tk] = df["Close"]
+                    if len(data) < 2:
+                        st.warning("Not enough valid tickers with history. Try different symbols or a longer period.")
+                    else:
+                        prices = pd.DataFrame(data).dropna()
+                        rets   = prices.pct_change().dropna()
+                        mu     = rets.mean().values*252
+                        cov    = rets.cov().values*252
+                        rf     = rf_m/100
+
+                        w_mv   = min_var_w(mu, cov)
+                        mv_r, mv_v = port_stats(w_mv, mu, cov)
+                        w_sh   = max_sharpe_w(mu, cov, rf)
+                        sh_r, sh_v = port_stats(w_sh, mu, cov)
+                        vols_f, rets_f = calc_frontier(mu, cov, n_pts=pts_m)
+
+                        c1, c2, c3 = st.columns(3)
+                        stat_box(c1, "Min-Var Return", f"{mv_r:.2%}", "#10B981", f"Vol {mv_v:.2%}")
+                        stat_box(c2, "Max-Sharpe Return", f"{sh_r:.2%}", "#F59E0B", f"Vol {sh_v:.2%}")
+                        sh_ratio = (sh_r - rf)/sh_v if sh_v>0 else 0
+                        stat_box(c3, "Sharpe (Max)", f"{sh_ratio:.2f}", "#EC4899", f"Rf {rf_m:.2f}%")
+
+                        fig = go.Figure()
+                        for i, tk in enumerate(tks):
+                            fig.add_trace(go.Scatter(
+                                x=[np.sqrt(cov[i,i])], y=[mu[i]],
+                                mode="markers", name=tk,
+                                marker=dict(size=9,color="#888"),
+                                text=[tk]
+                            ))
+                        fig.add_trace(go.Scatter(
+                            x=vols_f, y=rets_f,
+                            mode="lines", name="Efficient Frontier",
+                            line=dict(color=QT["primary"],width=2.5)
+                        ))
+                        fig.add_trace(go.Scatter(
+                            x=[mv_v], y=[mv_r],
+                            mode="markers", name="Min Variance",
+                            marker=dict(size=11,color="#10B981",symbol="diamond")
+                        ))
+                        fig.add_trace(go.Scatter(
+                            x=[sh_v], y=[sh_r],
+                            mode="markers", name="Max Sharpe",
+                            marker=dict(size=11,color="#F59E0B",symbol="star")
+                        ))
+                        fig.update_layout(**PLOT_CFG, height=420,
+                            title=dict(text="🔗 Efficient Frontier & Key Portfolios",
+                                       font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
+                            legend=dict(orientation="h",x=0,y=1.05,
+                                        font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
+                        fig.update_xaxes(gridcolor="#111",title_text="Volatility (σ)")
+                        fig.update_yaxes(gridcolor="#111",title_text="Expected Return")
+                        st.plotly_chart(fig, use_container_width=True)
+
+                        wm_df = pd.DataFrame({"Ticker": tks,
+                                              "Min-Var W": w_mv,
+                                              "Max-Sharpe W": w_sh})
+                        wm_df["Min-Var W"]   = wm_df["Min-Var W"].map(lambda x: f"{x:.2%}")
+                        wm_df["Max-Sharpe W"]= wm_df["Max-Sharpe W"].map(lambda x: f"{x:.2%}")
+                        st.markdown("#### Optimal Weights")
+                        st.dataframe(wm_df.set_index("Ticker"), use_container_width=True)
+
+                        rets_p = rets@w_sh
+                        cum_p  = (1+rets_p).cumprod()
+                        cum_b  = (1+rets).cumprod()
+                        fig2   = go.Figure()
+                        for tk in tks:
+                            fig2.add_trace(go.Scatter(
+                                x=cum_b.index, y=cum_b[tk],
+                                mode="lines", name=tk,
+                                line=dict(width=1)
+                            ))
+                        fig2.add_trace(go.Scatter(
+                            x=cum_p.index, y=cum_p,
+                            mode="lines", name="Max Sharpe Portfolio",
+                            line=dict(width=2.3,color=QT["primary"])
+                        ))
+                        fig2.update_layout(**PLOT_CFG, height=420,
+                            title=dict(text="📈 Growth of $1 — Max Sharpe vs Constituents",
+                                       font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
+                            legend=dict(orientation="h",x=0,y=1.05,
+                                        font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
+                        fig2.update_xaxes(gridcolor="#111",title_text="Date")
+                        fig2.update_yaxes(gridcolor="#111",title_text="Growth of 1")
+                        st.plotly_chart(fig2, use_container_width=True)
