@@ -442,7 +442,7 @@ with T_SIG:
             price = qd["price"] if qd["price"] > 0 else float(c_s.iloc[-1])
 
             signals = []
-signals.append(("🔺 Above SMA20","#00FF41") if price > sma20 else ("🔻 Below SMA20","#FF4444"))
+                signals.append(("🔺 Above SMA20","#00FF41") if price > sma20 else ("🔻 Below SMA20","#FF4444"))
 signals.append(("🔺 Above SMA50","#00FF41") if price > sma50 else ("🔻 Below SMA50","#FF4444"))
 
 signals.append(("📈 MACD Bullish","#00FF41") if macd_l > sig_l else ("BEARISH 🐻","#FF4444"))
