@@ -556,7 +556,8 @@ with T_SIG:
                             )
                         except: continue
         else:
-            st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period.")
+            st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period."
+                      )
 
 
 #  TAB 3 📊” CHART ANALYZER (up to 3 tickers)
