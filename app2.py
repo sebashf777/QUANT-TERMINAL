@@ -555,9 +555,10 @@ with T_SIG:
                                 unsafe_allow_html=True
                             )
                         except: continue
-        else:
-            st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period."
-                      )
+    else:
+        st.warning(
+            f"Not enough data for {screen_tk}. Try a different ticker or period."
+        )
 
 
 #  TAB 3 📊” CHART ANALYZER (up to 3 tickers)
