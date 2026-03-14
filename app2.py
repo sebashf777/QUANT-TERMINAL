@@ -12,12 +12,12 @@ import yfinance as yf
 from zoneinfo import ZoneInfo
 warnings.filterwarnings("ignore")
 
-# ── Auto-install bt if missing ─────────────────────────────
-import subprocess, sys
+# bt is declared available only if importable (add bt to requirements.txt)
 try:
-    import bt
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "bt", "--quiet"])
+    import bt as _bt_lib
+    BT_AVAILABLE = True
+except Exception:
+    BT_AVAILABLE = False
 
 st.set_page_config(page_title="âš¡ Quant Terminal", layout="wide", page_icon="âš¡", initial_sidebar_state="collapsed")
 NY  = ZoneInfo("America/New_York")
@@ -1590,7 +1590,7 @@ with T_QUANT:
         f"<h4 style='color:{QT['primary']};font-family:monospace'>🔬 QUANT LAB — FULL MARKOWITZ PORTFOLIO ENGINE</h4>",
         unsafe_allow_html=True
     )
-
+ 
     # ── Inputs ────────────────────────────────────────────────
     qi1, qi2, qi3, qi4 = st.columns([3, 2, 2, 2])
     with qi1:
@@ -1603,24 +1603,27 @@ with T_QUANT:
         ql_start = st.date_input("📅 Start Date", value=pd.to_datetime("2019-01-01"), key="ql_start")
         ql_end   = st.date_input("📅 End Date",   value=pd.to_datetime("2025-05-01"), key="ql_end")
     with qi3:
-        ql_n_mc = st.number_input("🎲 MC Iterations", min_value=1000, max_value=50000,
-                                   value=10000, step=1000, key="ql_nmc")
-        ql_rf   = st.number_input("🏛️ Risk-Free Rate (annual, dec)",
-                                   min_value=0.0, max_value=0.20, value=0.0437,
-                                   step=0.001, format="%.4f", key="ql_rf")
+        ql_n_mc  = st.number_input("🎲 MC Iterations", min_value=1000, max_value=50000,
+                                    value=10000, step=1000, key="ql_nmc")
+        ql_rf    = st.number_input("🏛️ Risk-Free Rate (annual, dec)",
+                                    min_value=0.0, max_value=0.20, value=0.0437,
+                                    step=0.001, format="%.4f", key="ql_rf")
     with qi4:
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
         run_ql = st.button("🚀 Run Markowitz Engine", key="run_ql", use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-
+ 
     if not run_ql:
         st.info("Set your parameters above and click **Run Markowitz Engine**.")
     else:
+        import matplotlib
+        matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+ 
         tickers = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
-
-        # ── 1. Data Download ──────────────────────────────────
+ 
+        # ── 1. Data Download ─────────────────────────────────
         st.markdown(
             f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
             "font-size:13px;margin:14px 0 6px'>1 · DATA DOWNLOAD</div>",
@@ -1629,7 +1632,7 @@ with T_QUANT:
         with st.spinner("Downloading price data from Yahoo Finance..."):
             raw = yf.download(tickers, start=str(ql_start), end=str(ql_end),
                               auto_adjust=True, progress=False)
-
+ 
         if raw.empty:
             st.error("No data returned. Check tickers or dates.")
         else:
@@ -1638,22 +1641,22 @@ with T_QUANT:
                 prices = raw[field][[t for t in tickers if t in raw[field].columns]].dropna(axis=1)
             else:
                 field  = "Adj Close" if "Adj Close" in raw.columns else "Close"
-                prices = raw[[field]].rename(columns={field: tickers[0]}) if len(tickers) == 1 else raw[field]
-
+                prices = raw[[field]].rename(columns={field: tickers[0]}) if len(tickers)==1 else raw[field]
+ 
             available_tickers = list(prices.columns)
             st.markdown(
                 f"<div style='font-family:monospace;font-size:12px;color:#aaa'>"
                 f"Using: <span style='color:{QT['primary']}'>{', '.join(available_tickers)}</span></div>",
                 unsafe_allow_html=True
             )
-
-            # ── 2. Returns & Stats ────────────────────────────
+ 
+            # ── 2. Returns & stats ───────────────────────────
             returns     = prices.pct_change().dropna()
             mean_annual = returns.mean() * 252
             cov_annual  = returns.cov() * 252
             std_annual  = np.sqrt(np.diag(cov_annual.values))
             corr_matrix = returns.corr()
-
+ 
             col_l, col_r = st.columns(2)
             with col_l:
                 st.markdown("<div style='font-family:monospace;font-size:11px;color:#888'>Annualized Expected Returns</div>", unsafe_allow_html=True)
@@ -1661,7 +1664,7 @@ with T_QUANT:
             with col_r:
                 st.markdown("<div style='font-family:monospace;font-size:11px;color:#888'>Annualized Volatility</div>", unsafe_allow_html=True)
                 st.dataframe(pd.Series(std_annual, index=available_tickers, name="σ").to_frame().style.format("{:.2%}"), use_container_width=True)
-
+ 
             # ── 3. Covariance & Correlation Heatmaps ─────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
@@ -1669,6 +1672,7 @@ with T_QUANT:
                 unsafe_allow_html=True
             )
             hm1, hm2 = st.columns(2)
+ 
             with hm1:
                 max_abs_cov = np.max(np.abs(cov_annual.values))
                 fig, ax = plt.subplots(figsize=(5, 4))
@@ -1682,10 +1686,11 @@ with T_QUANT:
                 for i in range(len(available_tickers)):
                     for j in range(len(available_tickers)):
                         val = cov_annual.iloc[i, j]
-                        clr = "white" if abs(val) < 0.5 * max_abs_cov else "black"
-                        ax.text(j, i, f"{val:.2e}", ha="center", va="center", color=clr, fontsize=6, fontweight="bold")
-                plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
+                        color = "white" if abs(val) < 0.5 * max_abs_cov else "black"
+                        ax.text(j, i, f"{val:.2e}", ha="center", va="center", color=color, fontsize=6)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+ 
             with hm2:
                 fig, ax = plt.subplots(figsize=(5, 4))
                 fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
@@ -1698,17 +1703,18 @@ with T_QUANT:
                 for i in range(len(available_tickers)):
                     for j in range(len(available_tickers)):
                         val = corr_matrix.iloc[i, j]
-                        clr = "white" if abs(val) > 0.5 else "black"
-                        ax.text(j, i, f"{val:.2f}", ha="center", va="center", color=clr, fontsize=7, fontweight="bold")
-                plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── 4. Individual Asset Risk-Return ───────────────
+                        color = "white" if abs(val) > 0.5 else "black"
+                        ax.text(j, i, f"{val:.2f}", ha="center", va="center", color=color, fontsize=7)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+ 
+            # ── 4. Individual Asset Risk-Return ──────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
                 "font-size:13px;margin:14px 0 6px'>3 · INDIVIDUAL ASSET RISK–RETURN</div>",
                 unsafe_allow_html=True
             )
-            fig, ax = plt.subplots(figsize=(7, 5))
+            fig, ax = plt.subplots(figsize=(6, 4))
             fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
             ax.scatter(std_annual, mean_annual, s=150, color=QT["primary"],
                        edgecolor="#fff", linewidth=1.5, alpha=0.9)
@@ -1720,21 +1726,22 @@ with T_QUANT:
             ax.set_xlabel("Volatility (σ)", color="#888"); ax.set_ylabel("Expected Return", color="#888")
             ax.tick_params(colors="#666"); ax.grid(True, alpha=0.15, color="#333")
             for spine in ax.spines.values(): spine.set_edgecolor("#333")
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── 5. Monte Carlo Simulation ─────────────────────
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 5. Monte Carlo Simulation ────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                f"font-size:13px;margin:14px 0 6px'>4 · MONTE CARLO PORTFOLIOS ({ql_n_mc:,} iterations)</div>",
+                "font-size:13px;margin:14px 0 6px'>4 · MONTE CARLO PORTFOLIOS ({ql_n_mc:,} iterations)</div>",
                 unsafe_allow_html=True
             )
             n_assets = len(available_tickers)
             years    = (pd.to_datetime(ql_end) - pd.to_datetime(ql_start)).days / 365.25
             results  = np.zeros((4 + n_assets, ql_n_mc))
-
+ 
             with st.spinner(f"Simulating {ql_n_mc:,} random portfolios..."):
                 for i in range(ql_n_mc):
-                    w  = np.random.dirichlet(np.ones(n_assets))
+                    w = np.random.dirichlet(np.ones(n_assets))
                     pr = float(np.dot(w, mean_annual))
                     pv = float(np.sqrt(w @ cov_annual.values @ w))
                     results[0, i] = pr
@@ -1742,11 +1749,11 @@ with T_QUANT:
                     results[2, i] = (pr - ql_rf) / pv if pv > 0 else 0.0
                     results[3, i] = (1 + pr) ** (1 / years) - 1
                     results[4:, i] = w
-
-            # ── 6. Efficient Frontier Optimizer ───────────────
+ 
+            # ── 6. Efficient Frontier (optimizer) ────────────
             def _pstats(w, mu, cov):
                 return float(np.dot(w, mu)), float(np.sqrt(w @ cov.values @ w))
-
+ 
             def _min_vol(mu, cov):
                 n   = len(mu)
                 res = minimize(lambda w: _pstats(w, mu, cov)[1], np.ones(n)/n,
@@ -1754,47 +1761,44 @@ with T_QUANT:
                                constraints={"type":"eq","fun":lambda x: np.sum(x)-1},
                                method="SLSQP", options={"ftol":1e-9})
                 return res.x if res.success else np.ones(n)/n
-
+ 
             def _max_sharpe(mu, cov, rf):
                 n   = len(mu)
-                def neg_sh(w):
-                    r, v = _pstats(w, mu, cov)
-                    return -(r - rf) / v if v > 1e-10 else 0
-                res = minimize(neg_sh, np.ones(n)/n,
+                res = minimize(lambda w: -((_pstats(w,mu,cov)[0]-rf)/_pstats(w,mu,cov)[1]),
+                               np.ones(n)/n,
                                bounds=[(0,1)]*n,
                                constraints={"type":"eq","fun":lambda x: np.sum(x)-1},
                                method="SLSQP", options={"ftol":1e-9})
                 return res.x if res.success else np.ones(n)/n
-
+ 
             with st.spinner("Optimizing frontier..."):
-                min_vol_weights        = _min_vol(mean_annual, cov_annual)
-                min_vol_ret, min_vol_vol = _pstats(min_vol_weights, mean_annual, cov_annual)
-                tangency_weights       = _max_sharpe(mean_annual, cov_annual, ql_rf)
-                tangency_ret, tangency_vol = _pstats(tangency_weights, mean_annual, cov_annual)
-
-                target_returns = np.linspace(min_vol_ret, mean_annual.max() * 0.95, 150)
-                frontier_vols, frontier_rets = [], []
-                x0 = min_vol_weights.copy()
-                for tgt in target_returns:
+                min_vol_w   = _min_vol(mean_annual, cov_annual)
+                mv_ret, mv_vol = _pstats(min_vol_w, mean_annual, cov_annual)
+                tan_w       = _max_sharpe(mean_annual, cov_annual, ql_rf)
+                tan_ret, tan_vol = _pstats(tan_w, mean_annual, cov_annual)
+ 
+                target_rets = np.linspace(mv_ret, mean_annual.max() * 0.95, 120)
+                f_vols, f_rets = [], []
+                x0 = min_vol_w.copy()
+                for tgt in target_rets:
                     try:
                         res = minimize(
                             lambda w: _pstats(w, mean_annual, cov_annual)[1], x0,
                             bounds=[(0,1)]*n_assets,
                             constraints=[
                                 {"type":"eq","fun":lambda x: np.sum(x)-1},
-                                {"type":"eq","fun":lambda x, t=tgt: _pstats(x, mean_annual, cov_annual)[0] - t}
+                                {"type":"eq","fun":lambda x,t=tgt: _pstats(x,mean_annual,cov_annual)[0]-t}
                             ],
                             method="SLSQP", options={"ftol":1e-9}
                         )
                         if res.success and res.fun > 0:
                             r, v = _pstats(res.x, mean_annual, cov_annual)
-                            if abs(r - tgt) < 1e-6:
-                                frontier_vols.append(v); frontier_rets.append(r); x0 = res.x.copy()
+                            if abs(r - tgt) < 1e-5:
+                                f_vols.append(v); f_rets.append(r); x0 = res.x.copy()
                     except: pass
-                frontier_vols = np.array(frontier_vols)
-                frontier_rets = np.array(frontier_rets)
-
-            # ── 7. Efficient Frontier Plot ────────────────────
+                f_vols = np.array(f_vols); f_rets = np.array(f_rets)
+ 
+            # ── 7. Scatter + Frontier + CAL ──────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
                 "font-size:13px;margin:14px 0 6px'>5 · EFFICIENT FRONTIER & OPTIMAL PORTFOLIOS</div>",
@@ -1802,37 +1806,35 @@ with T_QUANT:
             )
             fig, ax = plt.subplots(figsize=(8, 6))
             fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
-            sc = ax.scatter(results[1], results[0], c=results[2], cmap="viridis",
-                            alpha=0.4, s=15, label="Random Portfolios")
+ 
+            sc = ax.scatter(results[1], results[0], c=results[2], cmap="plasma",
+                            alpha=0.35, s=12, label="Random Portfolios")
             cbar = plt.colorbar(sc, ax=ax); cbar.set_label("Sharpe Ratio", color="#aaa")
-            cbar.ax.yaxis.set_tick_params(color="#aaa")
-            plt.setp(cbar.ax.yaxis.get_ticklabels(), color="#aaa")
-
-            if len(frontier_vols) > 0:
-                idx_s = np.argsort(frontier_vols)
-                ax.plot(frontier_vols[idx_s], frontier_rets[idx_s],
-                        "b-", linewidth=3, label="Efficient Frontier", color="#06B6D4")
-
-            ax.scatter(tangency_vol, tangency_ret, marker="*", s=350, color="red",
-                       edgecolor="black", zorder=5,
-                       label=f"Tangency  R={tangency_ret:.1%}  σ={tangency_vol:.1%}")
-            ax.scatter(min_vol_vol, min_vol_ret, marker="*", s=350, color="dodgerblue",
-                       edgecolor="black", zorder=5,
-                       label=f"Min Vol   R={min_vol_ret:.1%}  σ={min_vol_vol:.1%}")
-
-            cal_x = np.linspace(0, (frontier_vols.max() if len(frontier_vols) > 0 else tangency_vol*2)*1.1, 100)
-            cal_y = ql_rf + (tangency_ret - ql_rf) / tangency_vol * cal_x
-            ax.plot(cal_x, cal_y, color="#A855F7", linewidth=2.5, linestyle="--", label="Capital Allocation Line")
-
+            cbar.ax.yaxis.set_tick_params(color="#aaa"); plt.setp(cbar.ax.yaxis.get_ticklabels(), color="#aaa")
+ 
+            if len(f_vols) > 0:
+                order = np.argsort(f_vols)
+                ax.plot(f_vols[order], f_rets[order], color="#06B6D4", linewidth=2.5, label="Efficient Frontier")
+ 
+            ax.scatter(tan_vol, tan_ret, marker="*", s=400, color="#FFD700", edgecolor="#fff", zorder=5,
+                       label=f"Tangency  R={tan_ret:.1%}  σ={tan_vol:.1%}")
+            ax.scatter(mv_vol, mv_ret, marker="*", s=400, color="#10B981", edgecolor="#fff", zorder=5,
+                       label=f"Min Vol   R={mv_ret:.1%}  σ={mv_vol:.1%}")
+ 
+            cal_x = np.linspace(0, (f_vols.max() if len(f_vols)>0 else tan_vol*2)*1.1, 100)
+            cal_y = ql_rf + (tan_ret - ql_rf) / tan_vol * cal_x
+            ax.plot(cal_x, cal_y, color="#A855F7", linewidth=2, linestyle="--", label="Capital Allocation Line")
+ 
             ax.set_title("Efficient Frontier Analysis", color="#E5E7EB", fontsize=11)
             ax.set_xlabel("Annualized Volatility", color="#888")
             ax.set_ylabel("Annualized Return", color="#888")
             ax.tick_params(colors="#666"); ax.grid(True, alpha=0.12, color="#333")
             for spine in ax.spines.values(): spine.set_edgecolor("#333")
             ax.legend(fontsize=8, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── Stats Cards ───────────────────────────────────
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── Stats cards ───────────────────────────────────
             cs1, cs2, cs3, cs4, cs5 = st.columns(5)
             def _sbox(col, label, val, color=None):
                 c = color or QT["primary"]
@@ -1844,44 +1846,44 @@ with T_QUANT:
                     "</div>",
                     unsafe_allow_html=True
                 )
-            tan_sharpe = (tangency_ret - ql_rf) / tangency_vol if tangency_vol > 0 else 0
-            _sbox(cs1, "Tangency Return", f"{tangency_ret:.2%}", "#FFD700")
-            _sbox(cs2, "Tangency Vol",    f"{tangency_vol:.2%}", "#FFD700")
-            _sbox(cs3, "Tangency Sharpe", f"{tan_sharpe:.3f}", QT["primary"])
-            _sbox(cs4, "Min Vol Return",  f"{min_vol_ret:.2%}", "#10B981")
-            _sbox(cs5, "Min Vol σ",       f"{min_vol_vol:.2%}", "#10B981")
-
+            tan_sharpe = (tan_ret - ql_rf) / tan_vol if tan_vol > 0 else 0
+            _sbox(cs1, "Tangency Return",  f"{tan_ret:.2%}", "#FFD700")
+            _sbox(cs2, "Tangency Vol",     f"{tan_vol:.2%}", "#FFD700")
+            _sbox(cs3, "Tangency Sharpe",  f"{tan_sharpe:.3f}", QT["primary"])
+            _sbox(cs4, "Min Vol Return",   f"{mv_ret:.2%}", "#10B981")
+            _sbox(cs5, "Min Vol σ",        f"{mv_vol:.2%}", "#10B981")
+ 
             # ── 8. Allocation Pie Charts ──────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
                 "font-size:13px;margin:14px 0 6px'>6 · OPTIMAL PORTFOLIO ALLOCATIONS</div>",
                 unsafe_allow_html=True
             )
-            fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+            fig, axes = plt.subplots(1, 2, figsize=(10, 4))
             fig.patch.set_facecolor("#0D0D0D")
-            for ax, (name, w) in zip(axes, [("Tangency", tangency_weights), ("Min Vol", min_vol_weights)]):
+            for ax, (name, w) in zip(axes, [("Tangency", tan_w), ("Min Vol", min_vol_w)]):
                 ax.set_facecolor("#0D0D0D")
                 mask = w > 0.01
-                colors_pie = plt.cm.Blues(np.linspace(0.3, 0.9, mask.sum()))
+                colors_pie = plt.cm.plasma(np.linspace(0.2, 0.85, mask.sum()))
                 wedges, texts, autotexts = ax.pie(
                     w[mask], labels=np.array(available_tickers)[mask],
                     autopct="%1.1f%%", startangle=90, colors=colors_pie
                 )
-                for t in texts: t.set_color("#ccc"); t.set_fontsize(9)
-                for at in autotexts: at.set_color("black"); at.set_fontsize(9)
-                ax.set_title(name, color="#E5E7EB", fontsize=12)
-            plt.suptitle("Optimal Portfolio Allocations", color="#E5E7EB", fontsize=14)
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── Weights Table ─────────────────────────────────
+                for t in texts:    t.set_color("#ccc"); t.set_fontsize(8)
+                for at in autotexts: at.set_color("#111"); at.set_fontsize(8)
+                ax.set_title(name, color="#E5E7EB", fontsize=10)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── Weights table ─────────────────────────────────
             wm_df = pd.DataFrame({
-                "Ticker":       available_tickers,
-                "Tangency W":   [f"{x:.2%}" for x in tangency_weights],
-                "Min Vol W":    [f"{x:.2%}" for x in min_vol_weights],
+                "Ticker":         available_tickers,
+                "Tangency W":     [f"{x:.2%}" for x in tan_w],
+                "Min Vol W":      [f"{x:.2%}" for x in min_vol_w],
             })
             st.dataframe(wm_df.set_index("Ticker"), use_container_width=True)
-
-            # ── 9. Price + SMA per Ticker ─────────────────────
+ 
+            # ── 9. Price + SMA plots ──────────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
                 "font-size:13px;margin:14px 0 6px'>7 · PRICE WITH SMAs FOR EACH TICKER</div>",
@@ -1891,68 +1893,25 @@ with T_QUANT:
             nrows_p = math.ceil(len(available_tickers) / ncols_p)
             fig, axes = plt.subplots(nrows_p, ncols_p, figsize=(12, nrows_p * 3))
             fig.patch.set_facecolor("#0D0D0D")
-            axes_flat = axes.flatten() if hasattr(axes, "flatten") else [axes]
+            axes = axes.flatten() if hasattr(axes, "flatten") else [axes]
             for i, ticker in enumerate(available_tickers):
-                ax = axes_flat[i]; ax.set_facecolor("#111")
-                ax.plot(prices[ticker], color=QT["primary"],  linewidth=1,   label="Price")
+                ax = axes[i]; ax.set_facecolor("#111")
+                ax.plot(prices[ticker], color=QT["primary"],   linewidth=1,   label="Price")
                 ax.plot(prices[ticker].rolling(35).mean(),  color="#F59E0B", linewidth=1.2, linestyle="--", label="SMA35")
                 ax.plot(prices[ticker].rolling(150).mean(), color="#10B981", linewidth=1.2, linestyle="-.", label="SMA150")
-                ax.set_title(ticker, color="#E5E7EB", fontsize=9)
+                ax.set_title(f"{ticker}", color="#E5E7EB", fontsize=9)
                 ax.tick_params(colors="#555", labelsize=7)
                 ax.grid(True, alpha=0.1, color="#333")
                 for spine in ax.spines.values(): spine.set_edgecolor("#222")
                 ax.legend(fontsize=6, facecolor="#111", labelcolor="#aaa", edgecolor="#222")
-            for j in range(i+1, len(axes_flat)): axes_flat[j].axis("off")
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── 10. Weight + Price/SMA Overlay (NEW) ──────────
+            for j in range(i+1, len(axes)): axes[j].axis("off")
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 10. Monte Carlo Performance Paths ────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>8 · TANGENCY WEIGHTS vs PRICE/SMA OVERLAY</div>",
-                unsafe_allow_html=True
-            )
-            target_weights_tangency = pd.DataFrame(
-                np.tile(tangency_weights, (len(prices), 1)),
-                index=prices.index, columns=available_tickers
-            )
-            sma_short = prices.rolling(35).mean()
-            sma_long  = prices.rolling(150).mean()
-
-            merge_list, colnames = [], []
-            for ticker in available_tickers:
-                merge_list.extend([target_weights_tangency[ticker], prices[ticker],
-                                   sma_short[ticker], sma_long[ticker]])
-                colnames.extend([f"{ticker}_Weight", f"{ticker}_Price",
-                                 f"{ticker}_SMA35",  f"{ticker}_SMA150"])
-            tmp = pd.concat(merge_list, axis=1); tmp.columns = colnames
-
-            fig, ax1 = plt.subplots(figsize=(12, 6))
-            fig.patch.set_facecolor("#0D0D0D"); ax1.set_facecolor("#111")
-            ax2 = ax1.twinx()
-            tab10 = plt.cm.tab10.colors
-            for i, ticker in enumerate(available_tickers):
-                c = tab10[i % len(tab10)]
-                ax1.plot(tmp.index, tmp[f"{ticker}_Price"],  color=c, alpha=0.7,  linewidth=1,   label=f"{ticker} Price")
-                ax1.plot(tmp.index, tmp[f"{ticker}_SMA35"],  color=c, alpha=0.35, linewidth=0.9, linestyle="--", label=f"{ticker} SMA35")
-                ax1.plot(tmp.index, tmp[f"{ticker}_SMA150"], color=c, alpha=0.35, linewidth=0.9, linestyle="-.", label=f"{ticker} SMA150")
-                ax2.plot(tmp.index, tmp[f"{ticker}_Weight"], color=c, alpha=0.9,  linewidth=2,   label=f"{ticker} Weight")
-            ax1.set_title("Target Weights and Price/SMA Overlay (Tangency Portfolio)", color="#E5E7EB", fontsize=10)
-            ax1.set_xlabel("Date", color="#888"); ax1.set_ylabel("Price", color="#888")
-            ax2.set_ylabel("Portfolio Weight", color="#888")
-            ax1.tick_params(colors="#666"); ax2.tick_params(colors="#666")
-            ax1.grid(True, alpha=0.12, color="#333")
-            for spine in ax1.spines.values(): spine.set_edgecolor("#333")
-            for spine in ax2.spines.values(): spine.set_edgecolor("#333")
-            lines1, labels1 = ax1.get_legend_handles_labels()
-            lines2, labels2 = ax2.get_legend_handles_labels()
-            ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper left",
-                       fontsize=7, ncol=2, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── 11. Monte Carlo Performance Paths ────────────
-            st.markdown(
-                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>9 · MONTE CARLO PERFORMANCE PATHS (1-year)</div>",
+                "font-size:13px;margin:14px 0 6px'>8 · MONTE CARLO PERFORMANCE PATHS (1-year simulation)</div>",
                 unsafe_allow_html=True
             )
             n_days    = 252
@@ -1965,53 +1924,55 @@ with T_QUANT:
             pvals = np.ones((n_samples, n_days + 1))
             for day in range(n_days):
                 pvals[:, day+1] = pvals[:, day] * (1 + s_weights @ daily_r[day])
-
-            fig, ax = plt.subplots(figsize=(12, 5))
+ 
+            fig, ax = plt.subplots(figsize=(10, 4))
             fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#111")
             for i in range(n_samples):
-                ax.plot(pvals[i], alpha=0.1, color=QT["primary"], linewidth=0.8)
-            ax.plot(np.median(pvals, axis=0), color="#FFD700", linewidth=2.5, label="Median path")
+                ax.plot(pvals[i], alpha=0.12, color=QT["primary"], linewidth=0.7)
+            ax.plot(np.median(pvals, axis=0), color="#FFD700", linewidth=2, label="Median path")
             ax.set_title("Monte Carlo Portfolio Performance Paths (100 samples)", color="#E5E7EB", fontsize=10)
             ax.set_xlabel("Trading Days", color="#888"); ax.set_ylabel("Portfolio Value", color="#888")
             ax.tick_params(colors="#666"); ax.grid(True, alpha=0.1, color="#333")
             for spine in ax.spines.values(): spine.set_edgecolor("#333")
             ax.legend(fontsize=8, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
-            plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-            # ── 12. Backtest Equity Curves via bt ────────────
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 11. Equity Curves via bt (optional) ──────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>10 · BACKTEST EQUITY CURVES</div>",
+                "font-size:13px;margin:14px 0 6px'>9 · BACKTEST EQUITY CURVES</div>",
                 unsafe_allow_html=True
             )
-            try:
-                import bt
-                target_weights_minvol = pd.DataFrame(
-                    np.tile(min_vol_weights, (len(prices), 1)),
-                    index=prices.index, columns=available_tickers
+            if not BT_AVAILABLE:
+                st.info(
+                    "📦 `bt` is not installed. Add `bt` to your **requirements.txt** and redeploy "
+                    "to enable backtest equity curves."
                 )
-                strat_t = bt.Strategy("Tangency", [bt.algos.WeighTarget(target_weights_tangency), bt.algos.Rebalance()])
-                strat_m = bt.Strategy("Min Vol",   [bt.algos.WeighTarget(target_weights_minvol),  bt.algos.Rebalance()])
-                bt_res  = bt.run(bt.Backtest(strat_t, prices), bt.Backtest(strat_m, prices))
+            else:
+                try:
+                    import bt as _bt
+                    tw_df = pd.DataFrame(
+                        np.tile(tan_w,     (len(prices), 1)), index=prices.index, columns=available_tickers
+                    )
+                    mv_df = pd.DataFrame(
+                        np.tile(min_vol_w, (len(prices), 1)), index=prices.index, columns=available_tickers
+                    )
+                    strat_t = _bt.Strategy("Tangency", [_bt.algos.WeighTarget(tw_df), _bt.algos.Rebalance()])
+                    strat_m = _bt.Strategy("Min Vol",  [_bt.algos.WeighTarget(mv_df), _bt.algos.Rebalance()])
+                    bt_res  = _bt.run(_bt.Backtest(strat_t, prices), _bt.Backtest(strat_m, prices))
 
-                fig, ax = plt.subplots(figsize=(12, 5))
-                fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#111")
-                bt_res.prices.plot(ax=ax, linewidth=2)
-                ax.set_title("Portfolio Equity Curves", color="#E5E7EB", fontsize=10)
-                ax.set_ylabel("Portfolio Value", color="#888")
-                ax.set_xlabel("Date", color="#888")
-                ax.tick_params(colors="#666"); ax.grid(True, alpha=0.12, color="#333")
-                for spine in ax.spines.values(): spine.set_edgecolor("#333")
-                ax.legend(fontsize=9, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
-                plt.tight_layout(); st.pyplot(fig, clear_figure=True)
-
-                st.markdown(
-                    f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                    "font-size:12px;margin:10px 0 4px'>Backtest Stats</div>",
-                    unsafe_allow_html=True
-                )
-                st.text(bt_res.display())
-            except ImportError:
-                st.info("Install `bt` to enable backtest equity curves:  `pip install bt`")
-            except Exception as e:
-                st.warning(f"Backtest skipped: {e}")
+                    fig, ax = plt.subplots(figsize=(10, 4))
+                    fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#111")
+                    bt_res.prices.plot(ax=ax, linewidth=2)
+                    ax.set_title("Portfolio Equity Curves", color="#E5E7EB", fontsize=10)
+                    ax.set_ylabel("Portfolio Value", color="#888")
+                    ax.set_xlabel("Date", color="#888")
+                    ax.tick_params(colors="#666"); ax.grid(True, alpha=0.12, color="#333")
+                    for spine in ax.spines.values(): spine.set_edgecolor("#333")
+                    ax.legend(fontsize=9, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
+                    plt.tight_layout()
+                    st.pyplot(fig, clear_figure=True)
+                    st.text(bt_res.display())
+                except Exception as e:
+                    st.warning(f"Backtest skipped: {e}")
