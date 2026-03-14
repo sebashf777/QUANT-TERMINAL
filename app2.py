@@ -409,7 +409,7 @@ with T_MKT:
 #  TAB 2 â€” STOCK SIGNALS
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_SIG:
-    st.markdown("<h4 style='color:#A855F7;font-family:monospace;margin-bottom:10px'>ðŸ“¡ LIVE STOCK SIGNALS</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#A855F7;font-family:monospace;margin-bottom:10px'>📡 LIVE STOCK SIGNALS</h4>", unsafe_allow_html=True)
     sc1, sc2, sc3 = st.columns([2, 2, 8])
     with sc1: screen_tk = st.text_input("Ticker", value="AAPL", key="sc_tk").upper().strip()
     with sc2: screen_per = st.selectbox("Period", ["1mo","3mo","6mo","1y"], index=2, key="sc_per")
