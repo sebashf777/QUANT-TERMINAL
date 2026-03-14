@@ -444,7 +444,7 @@ with T_SIG:
             signals = []
             signals.append(("â–² Above SMA20","#00FF41") if price > sma20 else ("â–¼ Below SMA20","#FF4444"))
             signals.append(("â–² Above SMA50","#00FF41") if price > sma50 else ("â–¼ Below SMA50","#FF4444"))
-            signals.append(("ðŸ“ˆ MACD Bullish","#00FF41") if macd_l > sig_l else ("ðŸ“‰ MACD Bearish","#FF4444"))
+            signals.append(("ðŸ“ˆ MACD Bullish","#00FF41") if macd_l > sig_l else ("BEARISH 🐻","#FF4444"))
             if rsi_val > 70:   signals.append(("ðŸ”´ RSI Overbought","#FF4444"))
             elif rsi_val < 30: signals.append(("ðŸŸ¢ RSI Oversold","#00FF41"))
             else:              signals.append((f"ðŸŸ¡ RSI Neutral {rsi_val:.1f}","#F59E0B"))
