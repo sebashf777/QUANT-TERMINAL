@@ -305,7 +305,7 @@ with T_MKT:
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;"
             "padding:14px;margin-bottom:10px'>"
             "<div style='color:#A855F7;font-family:monospace;font-weight:bold;"
-            "font-size:12px;margin-bottom:10px'>ðŸ“Š MARKET BREADTH</div>"
+            "font-size:12px;margin-bottom:10px'>📊 MARKET BREADTH</div>"
             "<div style='display:flex;gap:20px;flex-wrap:wrap'>"
             "<div><div style='color:#555;font-size:10px;font-family:monospace'>ADVANCING</div>"
             f"<div style='color:#00FF41;font-size:18px;font-weight:bold;font-family:monospace'>{advancing:,}</div></div>"
