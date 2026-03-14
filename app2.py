@@ -12,20 +12,13 @@ import yfinance as yf
 from zoneinfo import ZoneInfo
 warnings.filterwarnings("ignore")
 
-# bt is declared available only if importable (add bt to requirements.txt)
-try:
-    import bt as _bt_lib
-    BT_AVAILABLE = True
-except Exception:
-    BT_AVAILABLE = False
-
-st.set_page_config(page_title="âš¡ Quant Terminal", layout="wide", page_icon="âš¡", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="⚡ Quant Terminal", layout="wide", page_icon="⚡", initial_sidebar_state="collapsed")
 NY  = ZoneInfo("America/New_York")
 NOW = datetime.datetime.now(NY)
 
-BS  = dict(primary="#A855F7",light="#D8B4FE",dark="#1E0A2E",mid="#2D1B4E",border="#7C3AED",glow="rgba(168,85,247,0.15)",emoji="ðŸ”®",label="BLACK-SCHOLES")
-MC  = dict(primary="#06B6D4",light="#A5F3FC",dark="#021B2E",mid="#0C2D3E",border="#0891B2",glow="rgba(6,182,212,0.15)",emoji="ðŸŽ²",label="MONTE CARLO")
-BTH = dict(primary="#10B981",light="#A7F3D0",dark="#022C22",mid="#064E3B",border="#059669",glow="rgba(16,185,129,0.15)",emoji="ðŸŒ³",label="BINOMIAL TREE")
+BS  = dict(primary="#A855F7",light="#D8B4FE",dark="#1E0A2E",mid="#2D1B4E",border="#7C3AED",glow="rgba(168,85,247,0.15)",emoji="Ÿ”",label="BLACK-SCHOLES")
+MC  = dict(primary="#06B6D4",light="#A5F3FC",dark="#021B2E",mid="#0C2D3E",border="#0891B2",glow="rgba(6,182,212,0.15)",emoji="ŸŽ",label="MONTE CARLO")
+BTH = dict(primary="#10B981",light="#A7F3D0",dark="#022C22",mid="#064E3B",border="#059669",glow="rgba(16,185,129,0.15)",emoji="ŸŒ",label="BINOMIAL TREE")
 CF  = dict(primary="#F59E0B",light="#FDE68A",dark="#1C1400",mid="#292000",border="#D97706",glow="rgba(245,158,11,0.15)")
 QT  = dict(primary="#EC4899",light="#FBCFE8",dark="#1F0010",mid="#3B0023",border="#DB2777",glow="rgba(236,72,153,0.15)")
 
@@ -57,13 +50,13 @@ input,select{background:#0D0D0D!important;color:#E5E7EB!important;
 h1,h2,h3{font-family:monospace!important;color:#E5E7EB!important;}
 </style>""", unsafe_allow_html=True)
 
-# â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ”€”€ HELPERS ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 def fp(p):
     if p > 10000: return f"{p:,.0f}"
     elif p > 100: return f"{p:,.2f}"
     elif p > 1:   return f"{p:.4f}"
     elif p > 0:   return f"{p:.6f}"
-    return "â€”"
+    return "€”"
 
 def fc(c):
     a = abs(c)
@@ -72,7 +65,7 @@ def fc(c):
     return f"{a:.6f}"
 
 def card(label, value, color="#E5E7EB", sub=""):
-    sub_html = f"<div style='color:#444;font-size:10px;margin-top:3px'>{sub}</div>" if sub else ""
+    sub_html = f"<div style='color:#444;font-size:10px;margin-top:3px'>{sub}</div>" if sub else "▼"
     return (
         "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;"
         "padding:12px 16px;font-family:Courier New,monospace'>"
@@ -85,7 +78,7 @@ def stat_box(col, label, value, color="#E5E7EB", sub=""):
     col.markdown(card(label, value, color, sub), unsafe_allow_html=True)
 
 def themed_card(label, value, theme, hint=""):
-    hint_html = f"<div style='color:#333;font-size:9px;margin-top:3px'>{hint}</div>" if hint else ""
+    hint_html = f"<div style='color:#333;font-size:9px;margin-top:3px'>{hint}</div>" if hint else "▼"
     return (
         f"<div style='background:{theme['mid']};border:1px solid {theme['border']};"
         "border-radius:6px;padding:10px 14px;text-align:center;font-family:Courier New,monospace'>"
@@ -94,7 +87,7 @@ def themed_card(label, value, theme, hint=""):
         f"{hint_html}</div>"
     )
 
-# â”€â”€ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ”€”€ DATA ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 @st.cache_data(ttl=300)
 def batch_quotes(tickers_tuple):
     tickers = list(tickers_tuple)
@@ -144,7 +137,7 @@ def get_info(ticker):
     try: return yf.Ticker(ticker).info or {}
     except: return {}
 
-# â”€â”€ OPTIONS MATH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ”€”€ OPTIONS MATH ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 def bs_params(St, K, r, sigma, T, q=0):
     d1 = (math.log(St/K) + (r - q + 0.5*sigma**2)*T) / (sigma*math.sqrt(T))
     return d1, d1 - sigma*math.sqrt(T)
@@ -195,7 +188,7 @@ def run_bt(St, K, sigma, T, r, N):
     d1, d2 = bs_params(St, K, r, sigma, T)
     return dict(d1=d1, d2=d2, dc=dcp[0], sc=cp[0], dp=dpp[0], sp=pp[0])
 
-# â”€â”€ PORTFOLIO MATH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ”€”€ PORTFOLIO MATH ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 def port_stats(w, mu, cov):
     ret = float(np.dot(w, mu))
     vol = float(np.sqrt(w @ cov @ w))
@@ -243,9 +236,9 @@ def calc_frontier(mu, cov, n_pts=60):
         except: pass
     return np.array(vols), np.array(rets)
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 #  HEADER
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 st.markdown(
     "<div style='background:linear-gradient(90deg,#0A0010,#001020,#001A0E);"
     "padding:14px 24px;border-bottom:1px solid #222;"
@@ -254,15 +247,15 @@ st.markdown(
     "<span style='font-size:24px;font-weight:bold;font-family:monospace;"
     "background:linear-gradient(90deg,#A855F7,#06B6D4,#10B981,#F59E0B);"
     "-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px'>"
-    "âš¡ QUANT TERMINAL"
+    "⚡ QUANT TERMINAL"
     "</span>"
     "<span style='color:#333;font-family:monospace;font-size:11px;margin-left:12px'>"
-    "Market Intelligence Â· Options Â· Quant Â· CFO Suite"
+    "Market Intelligence  Options  Quant  CFO Suite"
     "</span>"
     "</div>"
     f"<div style='font-family:monospace;font-size:11px;color:#444'>"
     f"{NOW.strftime('%A %b %d, %Y  |  %I:%M %p ET')} &nbsp;|&nbsp;"
-    "<span style='color:#10B981'>â— LIVE</span>"
+    "<span style='color:#10B981'>— LIVE</span>"
     "</div></div>",
     unsafe_allow_html=True
 )
@@ -278,10 +271,10 @@ T_MKT, T_SIG, T_CHART, T_CALC, T_CFO, T_QUANT = st.tabs([
 ])
 
 
-#  TAB 1 â€” MARKET OVERVIEW
+#  TAB 1 €” MARKET OVERVIEW
 
 with T_MKT:
-    if st.button("ðŸ”„ Refresh", key="ref_mkt"): st.cache_data.clear()
+    if st.button("Ÿ”„ Refresh", key="ref_mkt"): st.cache_data.clear()
     INDICES = {
         "S&P 500":"^GSPC","NASDAQ":"^IXIC","Dow Jones":"^DJI","Russell 2K":"^RUT",
         "VIX":"^VIX","10Y Yield":"^TNX","Gold":"GC=F","WTI Oil":"CL=F",
@@ -294,7 +287,7 @@ with T_MKT:
     for name, tk in INDICES.items():
         d = q.get(tk, dict(price=0, chg=0, pct=0))
         cc = "#00FF41" if d["chg"] >= 0 else "#FF4444"
-        sg = "â–²" if d["chg"] >= 0 else "â–¼"
+        sg = "–" if d["chg"] >= 0 else "–"
         bar_html += (
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:6px;"
             "padding:7px 12px;font-family:monospace;min-width:110px'>"
@@ -356,8 +349,8 @@ with T_MKT:
                 f"<td style='color:#555;padding:4px 8px;font-size:10px'>CHG%</td>"
                 f"</tr></thead><tbody>{rows}</tbody></table></div>"
             )
-        with g2a: st.markdown(sig_tbl("TOP GAINERS", GAINERS, "#00FF41", "ðŸš€"), unsafe_allow_html=True)
-        with g2b: st.markdown(sig_tbl("TOP LOSERS",  LOSERS,  "#FF4444", "ðŸ“‰"), unsafe_allow_html=True)
+        with g2a: st.markdown(sig_tbl("TOP GAINERS", GAINERS, "#00FF41", "Ÿš€"), unsafe_allow_html=True)
+        with g2b: st.markdown(sig_tbl("TOP LOSERS",  LOSERS,  "#FF4444", "Ÿ“‰"), unsafe_allow_html=True)
 
     with col2:
         FUTURES = [("Crude Oil","99.31","+3.74%","#00FF41"),("Natural Gas","3.13","-3.12%","#FF4444"),
@@ -412,9 +405,9 @@ with T_MKT:
             unsafe_allow_html=True
         )
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  TAB 2 â€” STOCK SIGNALS
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+#  TAB 2 €” STOCK SIGNALS
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 with T_SIG:
     st.markdown("<h4 style='color:#A855F7;font-family:monospace;margin-bottom:10px'>📡 LIVE STOCK SIGNALS</h4>", unsafe_allow_html=True)
     sc1, sc2, sc3 = st.columns([2, 2, 8])
@@ -422,7 +415,7 @@ with T_SIG:
     with sc2: screen_per = st.selectbox("Period", ["1mo","3mo","6mo","1y"], index=2, key="sc_per")
     with sc3:
         st.markdown("<br>", unsafe_allow_html=True)
-        run_screen = st.button("ðŸ” Analyze Stock", key="run_screen")
+        run_screen = st.button("Ÿ” Analyze Stock", key="run_screen")
 
     if (run_screen or screen_tk) and screen_tk:
         with st.spinner(f"Analyzing {screen_tk}..."):
@@ -471,16 +464,16 @@ with T_SIG:
             bull = sum(1 for _, c2 in signals if "#00FF41" in c2)
             bear = sum(1 for _, c2 in signals if "#FF4444" in c2)
             sc_col = "#00FF41" if bull > bear else ("#FF4444" if bear > bull else "#F59E0B")
-            sc_lbl = "BULLISH ðŸ‚" if bull > bear else ("BEARISH 🐻" if bear > bull else "NEUTRAL âš–ï¸")
+            sc_lbl = "BULLISH Ÿ‚" if bull > bear else ("BEARISH 🐻" if bear > bull else "NEUTRAL š–")
             chg_c  = "#00FF41" if qd["chg"] >= 0 else "#FF4444"
-            chg_sg = "â–²" if qd["chg"] >= 0 else "â–¼"
+            chg_sg = "–" if qd["chg"] >= 0 else "–"
             rsi_c  = "#FF4444" if rsi_val > 70 else ("#00FF41" if rsi_val < 30 else "#F59E0B")
 
             sa, sb, sc2x, sd = st.columns(4)
             stat_box(sa, "PRICE",    fp(price),                                    "#F59E0B")
             stat_box(sb, "CHANGE",   f"{chg_sg}{fc(qd['chg'])} ({qd['pct']:+.2f}%)", chg_c)
             stat_box(sc2x, "RSI (14)", f"{rsi_val:.1f}",                              rsi_c)
-            stat_box(sd, "SIGNAL",   sc_lbl,                                        sc_col, f"{bull} bull Â· {bear} bear")
+            stat_box(sd, "SIGNAL",   sc_lbl,                                        sc_col, f"{bull} bull  {bear} bear")
 
             sig_html = "<div style='display:flex;flex-wrap:wrap;gap:8px;margin:12px 0'>"
             for s, c2 in signals:
@@ -492,13 +485,13 @@ with T_SIG:
             st.markdown(sig_html + "</div>", unsafe_allow_html=True)
 
             fundamentals = {
-                "Market Cap":    f"${info.get('marketCap',0)/1e9:.1f}B" if info.get('marketCap') else "â€”",
-                "P/E Ratio":     f"{info.get('trailingPE',0):.1f}x"     if info.get('trailingPE') else "â€”",
-                "EPS (TTM)":     f"${info.get('trailingEps',0):.2f}"    if info.get('trailingEps') else "â€”",
-                "Revenue":       f"${info.get('totalRevenue',0)/1e9:.1f}B" if info.get('totalRevenue') else "â€”",
-                "Profit Margin": f"{info.get('profitMargins',0)*100:.1f}%" if info.get('profitMargins') else "â€”",
+                "Market Cap":    f"${info.get('marketCap',0)/1e9:.1f}B" if info.get('marketCap') else "€”",
+                "P/E Ratio":     f"{info.get('trailingPE',0):.1f}x"     if info.get('trailingPE') else "€”",
+                "EPS (TTM)":     f"${info.get('trailingEps',0):.2f}"    if info.get('trailingEps') else "€”",
+                "Revenue":       f"${info.get('totalRevenue',0)/1e9:.1f}B" if info.get('totalRevenue') else "€”",
+                "Profit Margin": f"{info.get('profitMargins',0)*100:.1f}%" if info.get('profitMargins') else "€”",
                 "52W High": fp(hi52), "52W Low": fp(lo52),
-                "Beta":      f"{info.get('beta',0):.2f}"           if info.get('beta') else "â€”",
+                "Beta":      f"{info.get('beta',0):.2f}"           if info.get('beta') else "€”",
                 "Div Yield": f"{info.get('dividendYield',0)*100:.2f}%" if info.get('dividendYield') else "0%",
                 "Volume":    f"{qd['vol']:,.0f}",
             }
@@ -544,7 +537,7 @@ with T_SIG:
                 if news:
                     st.markdown(
                         f"<div style='color:#A855F7;font-family:monospace;font-weight:bold;"
-                        f"font-size:11px;margin-bottom:6px'>ðŸ“° {screen_tk} NEWS</div>",
+                        f"font-size:11px;margin-bottom:6px'>Ÿ“ {screen_tk} NEWS</div>",
                         unsafe_allow_html=True
                     )
                     for item in news[:6]:
@@ -571,7 +564,7 @@ with T_SIG:
 #  TAB 3 📊” CHART ANALYZER (up to 3 tickers)
 
 with T_CHART:
-    st.markdown("<h4 style='color:#06B6D4;font-family:monospace;margin-bottom:10px'>ðŸ“Š TECHNICAL CHART ANALYZER</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#06B6D4;font-family:monospace;margin-bottom:10px'>Ÿ“Š TECHNICAL CHART ANALYZER</h4>", unsafe_allow_html=True)
     cc1, cc2, cc3, cc4 = st.columns([2, 2, 2, 4])
     with cc1: tk1 = st.text_input("Ticker 1", value="SPY",  key="ch_tk1").upper().strip()
     with cc2: tk2 = st.text_input("Ticker 2", value="QQQ",  key="ch_tk2").upper().strip()
@@ -600,7 +593,7 @@ with T_CHART:
         last = float(df2["Close"].iloc[-1]); prev = float(df2["Close"].iloc[-2])
         chg  = last - prev; pct = chg/prev*100
         ct   = "#00FF41" if chg >= 0 else "#FF4444"
-        sg   = "â–²" if chg >= 0 else "â–¼"
+        sg   = "–" if chg >= 0 else "–"
 
         fig = make_subplots(rows=4, cols=1, shared_xaxes=True,
                             row_heights=[.50,.15,.18,.17], vertical_spacing=0.02)
@@ -650,723 +643,724 @@ with T_CHART:
             build_chart(tk, chart_per)
         st.markdown("<hr style='border-color:#111;margin:4px 0'>", unsafe_allow_html=True)
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-# ════════════════════════════════════════════════════════════
-# ── CFA CALCULATORS BY CATEGORY ─────────────────────────────
-cfa_tab_q, cfa_tab_fi, cfa_tab_eq, cfa_tab_pm, cfa_tab_der = st.tabs(
-    ["QUANTITATIVE", "FIXED INCOME", "EQUITY", "PORTFOLIO", "DERIVATIVES"]
-)
-
-# ================= QUANTITATIVE METHODS TAB =================
-with cfa_tab_q:
-    st.markdown("### 📊 Quantitative Methods Calculators")
-
-    # ---- Future Value & Present Value ----
-    col_fv, col_pv, col_perp = st.columns(3)
-
-    with col_fv:
-        st.caption("Future Value: FV = PV × (1 + r)^N")
-        q_pv = st.number_input("PV", value=1000.0, key="q_pv")
-        q_r  = st.number_input("Rate r", value=0.05, format="%.4f", key="q_r")
-        q_n  = st.number_input("Periods N", value=10, step=1, key="q_n")
-        q_fv = q_pv * (1 + q_r) ** q_n
-        st.write(f"FV = {q_fv:,.2f}")
-
-    with col_pv:
-        st.caption("Present Value: PV = FV / (1 + r)^N")
-        q_fv2 = st.number_input("FV", value=1000.0, key="q_fv2")
-        q_r2  = st.number_input("Rate r ", value=0.05, format="%.4f", key="q_r2")
-        q_n2  = st.number_input("Periods N ", value=5, step=1, key="q_n2")
-        q_pv2 = q_fv2 / ((1 + q_r2) ** q_n2)
-        st.write(f"PV = {q_pv2:,.2f}")
-
-    with col_perp:
-        st.caption("Perpetuity PV: PV = PMT / r")
-        q_pmt = st.number_input("PMT", value=100.0, key="q_pmt")
-        q_r3  = st.number_input("Discount rate r", value=0.04, format="%.4f", key="q_r3")
-        q_pv_perp = q_pmt / q_r3 if q_r3 != 0 else 0.0
-        st.write(f"PV = {q_pv_perp:,.2f}")
-
-    st.markdown("---")
-
-    # ---- HPR & Geometric Mean Return ----
-    col_hpr, col_geo = st.columns(2)
-
-    with col_hpr:
-        st.caption("Holding Period Return: HPR = (P_t − P_{t−1} + D_t) / P_{t−1}")
-        q_pt1 = st.number_input("P_t (ending price)", value=110.0, key="q_pt1")
-        q_pt0 = st.number_input("P_{t−1} (begin price)", value=100.0, key="q_pt0")
-        q_dt  = st.number_input("D_t (dividend)", value=2.0, key="q_dt")
-        hpr = (q_pt1 - q_pt0 + q_dt) / q_pt0 if q_pt0 != 0 else 0.0
-        st.write(f"HPR = {hpr:.4f}  ({hpr*100:.2f}%)")
-
-    with col_geo:
-        st.caption("Geometric Mean: R_G = [(1+R1)…(1+Rn)]^(1/n) − 1")
-        q_geo_str = st.text_input("Returns (comma %, e.g. 10,-5,8)", value="10,-5,8", key="q_geo")
-        try:
-            vals = [float(x.strip())/100 for x in q_geo_str.split(",") if x.strip() != ""]
-            if len(vals) > 0:
-                prod = 1.0
-                for r in vals:
-                    prod *= (1 + r)
-                r_geo = prod**(1/len(vals)) - 1
-                st.write(f"Geometric mean = {r_geo:.4f}  ({r_geo*100:.2f}%)")
-            else:
-                st.write("Enter at least one return.")
-        except Exception:
-            st.write("Check return format.")
-
-    st.markdown("---")
-
-    # ---- Sharpe, CV, Z‑score ----
-    col_sh, col_cv, col_z = st.columns(3)
-
-    with col_sh:
-        st.caption("Sharpe Ratio: (r_p − r_f) / σ_p")
-        q_rp = st.number_input("Portfolio return r_p", value=0.08, format="%.4f", key="q_rp")
-        q_rf = st.number_input("Risk‑free r_f",       value=0.03, format="%.4f", key="q_rf")
-        q_sp = st.number_input("σ_p",                 value=0.15, format="%.4f", key="q_sp")
-        sharpe = (q_rp - q_rf) / q_sp if q_sp != 0 else 0.0
-        st.write(f"Sharpe = {sharpe:.3f}")
-
-    with col_cv:
-        st.caption("Coefficient of Variation: CV = s / X̄")
-        q_s  = st.number_input("Standard deviation s", value=0.12, format="%.4f", key="q_s")
-        q_xb = st.number_input("Mean X̄",              value=0.10, format="%.4f", key="q_xb")
-        cv = q_s / q_xb if q_xb != 0 else 0.0
-        st.write(f"CV = {cv:.3f}")
-
-    with col_z:
-        st.caption("Z‑Score: z = (x − μ) / σ")
-        q_x  = st.number_input("Observation x", value=75.0, key="q_x")
-        q_mu = st.number_input("Mean μ",        value=70.0, key="q_mu")
-        q_sd = st.number_input("Std dev σ",     value=10.0, key="q_sd")
-        z = (q_x - q_mu) / q_sd if q_sd != 0 else 0.0
-        st.write(f"z = {z:.3f}")
-
-    st.markdown("---")
-
-    # ---- Confidence Interval & Correlation ----
-    col_ci, col_corr = st.columns(2)
-
-    with col_ci:
-        st.caption("CI: X̄ ± z_{α/2} × (σ/√n)")
-        q_xb2 = st.number_input("Sample mean X̄", value=10.0, key="q_xb2")
-        q_sig = st.number_input("Population σ",   value=2.0,  key="q_sig")
-        q_n3  = st.number_input("Sample size n",  value=30,   step=1, key="q_n3")
-        q_zc  = st.number_input("z_{α/2}",        value=1.96, key="q_zc")
-        if q_n3 > 0:
-            se = q_sig / (q_n3 ** 0.5)
-            low = q_xb2 - q_zc * se
-            high = q_xb2 + q_zc * se
-            st.write(f"CI: [{low:.3f}, {high:.3f}]")
-        else:
-            st.write("n must be > 0.")
-
-    with col_corr:
-        st.caption("Correlation: corr = COV(X,Y) / (σ_X σ_Y)")
-        q_cov = st.number_input("Covariance COV(X,Y)", value=0.015, format="%.4f", key="q_cov")
-        q_sx  = st.number_input("σ_X", value=0.10, format="%.4f", key="q_sx")
-        q_sy  = st.number_input("σ_Y", value=0.12, format="%.4f", key="q_sy")
-        corr = q_cov / (q_sx * q_sy) if q_sx != 0 and q_sy != 0 else 0.0
-        st.write(f"Correlation = {corr:.3f}")
-# ================= FIXED INCOME TAB =================
-with cfa_tab_fi:
-    st.markdown("### 🏦 Fixed Income Calculators")
-
-    # ---- Basic Bond Pricing (level YTM) ----
-    st.subheader("Bond Price (Level Yield)")
-    col_basic1, col_basic2 = st.columns(2)
-
-    with col_basic1:
-        fi_par   = st.number_input("Par value (FV)", value=1000.0, key="fi_par")
-        fi_coupon_rate = st.number_input("Annual coupon rate", value=0.05, format="%.4f", key="fi_cpn_rate")
-        fi_yield = st.number_input("Yield to maturity (YTM)", value=0.06, format="%.4f", key="fi_ytm")
-    with col_basic2:
-        fi_maturity = st.number_input("Years to maturity", value=5.0, step=1.0, key="fi_mat")
-        fi_freq     = st.number_input("Coupons per year (m)", value=2, step=1, min_value=1, key="fi_freq")
-
-    cpn = fi_par * fi_coupon_rate / fi_freq
-    n   = int(fi_maturity * fi_freq)
-    r   = fi_yield / fi_freq
-
-    pv_coupons = sum([cpn / ((1 + r) ** t) for t in range(1, n + 1)])
-    pv_par     = fi_par / ((1 + r) ** n)
-    fi_price   = pv_coupons + pv_par
-
-    st.write(f"Bond price = {fi_price:,.2f}")
-
-    st.markdown("---")
-
-    # ---- Flat price, accrued interest, full price (Street convention simplified) ----
-    st.subheader("Flat Price, Accrued Interest, Full Price")
-    col_ai1, col_ai2 = st.columns(2)
-
-    with col_ai1:
-        clean_coupon_rate = st.number_input("Coupon rate (for AI)", value=0.05, format="%.4f", key="ai_cpn_rate")
-        clean_freq        = st.number_input("Coupons per year", value=2, step=1, min_value=1, key="ai_freq")
-        days_since_last   = st.number_input("Days since last coupon", value=30.0, key="ai_days_since")
-        days_in_period    = st.number_input("Days in coupon period", value=180.0, key="ai_days_period")
-    with col_ai2:
-        quoted_clean_price = st.number_input("Quoted flat (clean) price", value=fi_price, key="ai_clean_price")
-
-    cpn_ai = fi_par * clean_coupon_rate / clean_freq
-    accrued_interest = cpn_ai * (days_since_last / days_in_period)
-    full_price = quoted_clean_price + accrued_interest
-
-    st.write(f"Accrued interest = {accrued_interest:,.4f}")
-    st.write(f"Full (dirty) price = {full_price:,.2f}")
-
-    st.markdown("---")
-
-    # ---- Current yield and simple yield ----
-    st.subheader("Current Yield & Simple Yield")
-    col_y1, col_y2 = st.columns(2)
-
-    with col_y1:
-        cy_coupon = st.number_input("Annual coupon (amount)", value=fi_par * fi_coupon_rate, key="cy_coupon_amt")
-        cy_price  = st.number_input("Bond price for current yield", value=fi_price, key="cy_price")
-        current_yield = cy_coupon / cy_price if cy_price != 0 else 0.0
-        st.write(f"Current yield = {current_yield:.4f}  ({current_yield*100:.2f}%)")
-
-    with col_y2:
-        sy_years_to_maturity = st.number_input("Years to maturity (for simple yield)", value=fi_maturity, key="sy_years")
-        sy_par               = st.number_input("Par value (for simple yield)", value=fi_par, key="sy_par")
-        sy_price             = st.number_input("Price (for simple yield)", value=fi_price, key="sy_price")
-        if sy_years_to_maturity > 0 and sy_price != 0:
-            annual_coupon = sy_par * fi_coupon_rate
-            straight_line_amort = (sy_par - sy_price) / sy_years_to_maturity
-            simple_yield = (annual_coupon + straight_line_amort) / sy_price
-        else:
-            simple_yield = 0.0
-        st.write(f"Simple yield = {simple_yield:.4f}  ({simple_yield*100:.2f}%)")
-
-    st.markdown("---")
-
-    # ---- Money market discount & add-on rates ----
-    st.subheader("Money Market Instruments")
-    col_mm1, col_mm2 = st.columns(2)
-
-    with col_mm1:
-        mm_fv   = st.number_input("Face value (FV)", value=100000.0, key="mm_fv")
-        mm_disc = st.number_input("Discount rate (DR)", value=0.03, format="%.4f", key="mm_disc")
-        mm_days = st.number_input("Days to maturity", value=90.0, key="mm_days")
-        mm_day_count = st.number_input("Days in year (money mkt)", value=360.0, key="mm_year")
-        mm_price = mm_fv * (1 - mm_disc * (mm_days / mm_day_count))
-        st.write(f"Price (discount basis) = {mm_price:,.2f}")
-
-    with col_mm2:
-        mm_price2 = st.number_input("Price (for add-on)", value=mm_price, key="mm_price2")
-        mm_addon_days = st.number_input("Days to maturity (add-on)", value=mm_days, key="mm_addon_days")
-        mm_year2 = st.number_input("Days in year (add-on)", value=365.0, key="mm_year2")
-        if mm_price2 != 0:
-            add_on_rate = (mm_fv - mm_price2) / mm_price2 * (mm_year2 / mm_addon_days)
-        else:
-            add_on_rate = 0.0
-        st.write(f"Add-on yield (AOR) = {add_on_rate:.4f}  ({add_on_rate*100:.2f}%)")
-
-    st.markdown("---")
-
-    # ---- Duration and Convexity (approximate, price-yield) ----
-    st.subheader("Effective Duration & Convexity (Price-Yield Approximation)")
-    col_dc1, col_dc2 = st.columns(2)
-
-    with col_dc1:
-        p0 = st.number_input("Current full price P0", value=fi_price, key="dur_p0")
-        p_up = st.number_input("Price if yield ↑ (P−)", value=fi_price * 0.95, key="dur_p_minus")
-        p_down = st.number_input("Price if yield ↓ (P+)", value=fi_price * 1.05, key="dur_p_plus")
-        delta_y = st.number_input("Change in yield (Δy, decimal)", value=0.01, format="%.4f", key="dur_dy")
-
-    with col_dc2:
-        if delta_y != 0 and p0 != 0:
-            eff_dur = (p_down - p_up) / (2 * p0 * delta_y)
-            eff_conv = (p_down + p_up - 2 * p0) / (p0 * (delta_y ** 2))
-        else:
-            eff_dur = 0.0
-            eff_conv = 0.0
-        st.write(f"Effective duration ≈ {eff_dur:.4f}")
-        st.write(f"Effective convexity ≈ {eff_conv:.4f}")
-
-    st.markdown("---")
-
-    # ---- Price change using duration + convexity ----
-    st.subheader("Price Change (Duration + Convexity)")
-    col_pc1, col_pc2 = st.columns(2)
-
-    with col_pc1:
-        pc_p0 = st.number_input("Initial full price", value=fi_price, key="pc_p0")
-        pc_dur = st.number_input("Effective/Modified duration", value=eff_dur, key="pc_dur")
-        pc_conv = st.number_input("Effective convexity", value=eff_conv, key="pc_conv")
-        pc_dy = st.number_input("Yield change Δy (decimal)", value=-0.01, format="%.4f", key="pc_dy")
-
-    with col_pc2:
-        # %ΔP ≈ (−Dur × Δy) + (0.5 × Conv × (Δy)^2)
-        pct_delta_p = (-pc_dur * pc_dy) + (0.5 * pc_conv * (pc_dy ** 2))
-        new_price = pc_p0 * (1 + pct_delta_p)
-        st.write(f"Approx. %ΔPrice = {pct_delta_p*100:.3f}%")
-        st.write(f"Estimated new price = {new_price:,.2f}")
-# ================= EQUITY TAB =================
-with cfa_tab_eq:
-    st.markdown("### 📈 Equity Valuation Calculators")
-
-    # ---- Gordon Growth (Dividend Discount Model) ----
-    st.subheader("Dividend Discount Model (Constant Growth)")
-    col_ddm1, col_ddm2 = st.columns(2)
-
-    with col_ddm1:
-        eq_d1 = st.number_input("Next dividend D₁", value=2.0, key="eq_d1")
-        eq_re = st.number_input("Required return r", value=0.08, format="%.4f", key="eq_re")
-        eq_g  = st.number_input("Growth rate g", value=0.03, format="%.4f", key="eq_g")
-
-    with col_ddm2:
-        if eq_re > eq_g:
-            ddm_value = eq_d1 / (eq_re - eq_g)
-        else:
-            ddm_value = 0.0
-        st.write(f"Intrinsic value (P₀) = {ddm_value:,.2f}")
-        st.caption("Formula: P₀ = D₁ / (r − g)")
-
-    st.markdown("---")
-
-    # ---- Multi-stage DDM (2-stage) ----
-    st.subheader("Two-Stage Dividend Discount Model")
-    col_2ddm1, col_2ddm2 = st.columns(2)
-
-    with col_2ddm1:
-        ms_d0 = st.number_input("Current dividend D₀", value=1.50, key="ms_d0")
-        ms_g1 = st.number_input("High growth rate g₁ (years 1–N)", value=0.10, format="%.4f", key="ms_g1")
-        ms_g2 = st.number_input("Stable growth rate g₂ (after N)", value=0.04, format="%.4f", key="ms_g2")
-        ms_re = st.number_input("Required return r", value=0.09, format="%.4f", key="ms_re")
-        ms_n  = st.number_input("High growth period N (years)", value=5, step=1, min_value=1, key="ms_n")
-
-    with col_2ddm2:
-        dividends = []
-        pv_dividends = 0.0
-        for t in range(1, ms_n + 1):
-            dt = ms_d0 * ((1 + ms_g1) ** t)
-            dividends.append(dt)
-            pv_dividends += dt / ((1 + ms_re) ** t)
-
-        d_n1 = ms_d0 * ((1 + ms_g1) ** ms_n) * (1 + ms_g2)
-        if ms_re > ms_g2:
-            terminal_value = d_n1 / (ms_re - ms_g2)
-            pv_terminal = terminal_value / ((1 + ms_re) ** ms_n)
-        else:
-            terminal_value = 0.0
-            pv_terminal = 0.0
-
-        ms_p0 = pv_dividends + pv_terminal
-        st.write(f"Intrinsic value (P₀) ≈ {ms_p0:,.2f}")
-        st.caption("Sum PV of high-growth dividends + PV of terminal value at year N.")
-
-    st.markdown("---")
-
-    # ---- Free Cash Flow to Equity (FCFE) Model ----
-    st.subheader("Free Cash Flow to Equity (FCFE) Valuation")
-    col_fcfe1, col_fcfe2 = st.columns(2)
-
-    with col_fcfe1:
-        fcfe_1 = st.number_input("Next year FCFE₁", value=5.0, key="fcfe_1")
-        fcfe_re = st.number_input("Required return to equity r", value=0.10, format="%.4f", key="fcfe_re")
-        fcfe_g  = st.number_input("Long-term growth rate g", value=0.04, format="%.4f", key="fcfe_g")
-
-    with col_fcfe2:
-        if fcfe_re > fcfe_g:
-            fcfe_p0 = fcfe_1 / (fcfe_re - fcfe_g)
-        else:
-            fcfe_p0 = 0.0
-        st.write(f"Equity value (per share) = {fcfe_p0:,.2f}")
-        st.caption("Constant-growth FCFE: P₀ = FCFE₁ / (r − g)")
-
-    st.markdown("---")
-
-    # ---- P/E based valuation ----
-    st.subheader("P/E-Based Valuation")
-    col_pe1, col_pe2 = st.columns(2)
-
-    with col_pe1:
-        pe_eps = st.number_input("Expected EPS₁", value=4.0, key="pe_eps")
-        pe_justified = st.number_input("Justified P/E or target P/E", value=15.0, key="pe_justified")
-
-    with col_pe2:
-        pe_price = pe_eps * pe_justified
-        st.write(f"Value from P/E = {pe_price:,.2f}")
-        st.caption("P₀ = (Justified P/E) × EPS₁")
-
-    st.markdown("---")
-
-    # ---- Justified leading and trailing P/E (Gordon) ----
-    st.subheader("Justified P/E (Gordon Growth)")
-    col_jpe1, col_jpe2 = st.columns(2)
-
-    with col_jpe1:
-        jpe_payout = st.number_input("Dividend payout ratio (D₁ / E₁)", value=0.40, format="%.4f", key="jpe_payout")
-        jpe_re = st.number_input("Required return r", value=0.09, format="%.4f", key="jpe_re")
-        jpe_g  = st.number_input("Growth rate g", value=0.04, format="%.4f", key="jpe_g")
-
-    with col_jpe2:
-        if jpe_re > jpe_g:
-            justified_leading_pe = jpe_payout / (jpe_re - jpe_g)
-        else:
-            justified_leading_pe = 0.0
-        st.write(f"Justified leading P/E = {justified_leading_pe:.2f}")
-        st.caption("Leading P/E = payout ratio / (r − g)")
-
-    st.markdown("---")
-
-    # ---- Residual Income Model ----
-    st.subheader("Residual Income Valuation (Simple Single-stage)")
-    col_ri1, col_ri2 = st.columns(2)
-
-    with col_ri1:
-        ri_b0 = st.number_input("Current book value per share B₀", value=20.0, key="ri_b0")
-        ri_roe = st.number_input("Return on equity ROE", value=0.15, format="%.4f", key="ri_roe")
-        ri_re  = st.number_input("Required return r", value=0.10, format="%.4f", key="ri_re")
-        ri_growth = st.number_input("Growth rate of residual income g", value=0.03, format="%.4f", key="ri_growth")
-
-    with col_ri2:
-        # Residual income in year 1: RI₁ = (ROE − r) × B₀
-        ri1 = (ri_roe - ri_re) * ri_b0
-        if ri_re > ri_growth:
-            pv_ri_stream = ri1 / (ri_re - ri_growth)
-        else:
-            pv_ri_stream = 0.0
-        ri_p0 = ri_b0 + pv_ri_stream
-        st.write(f"Intrinsic value (P₀) ≈ {ri_p0:,.2f}")
-        st.caption("P₀ = B₀ + PV of expected residual income stream.")
-
-    st.markdown("---")
-
-    # ---- Equity return metrics: Dividend yield, capital gains yield, total return ----
-    st.subheader("Dividend Yield, Capital Gains Yield, Total Return")
-    col_ret1, col_ret2, col_ret3 = st.columns(3)
-
-    with col_ret1:
-        er_p0 = st.number_input("Initial price P₀", value=50.0, key="er_p0")
-        er_p1 = st.number_input("Ending price P₁", value=55.0, key="er_p1")
-        er_d1 = st.number_input("Dividend D₁", value=2.0, key="er_d1")
-
-    with col_ret2:
-        if er_p0 != 0:
-            div_yield = er_d1 / er_p0
-            cap_gain_yield = (er_p1 - er_p0) / er_p0
-            total_return = (er_p1 - er_p0 + er_d1) / er_p0
-        else:
-            div_yield = cap_gain_yield = total_return = 0.0
-
-    with col_ret3:
-        st.write(f"Dividend yield = {div_yield:.4f}  ({div_yield*100:.2f}%)")
-        st.write(f"Capital gains yield = {cap_gain_yield:.4f}  ({cap_gain_yield*100:.2f}%)")
-        st.write(f"Total return = {total_return:.4f}  ({total_return*100:.2f}%)")
-# ================= PORTFOLIO MANAGEMENT TAB =================
-with cfa_tab_pm:
-    st.markdown("### 📚 Portfolio Management Calculators")
-
-    # ---- 2-Asset Portfolio: Expected Return & Risk ----
-    st.subheader("Two-Asset Portfolio: E[R_p] and σ_p")
-
-    col_2p1, col_2p2, col_2p3 = st.columns(3)
-
-    with col_2p1:
-        w1 = st.number_input("Weight w₁", value=0.6, format="%.3f", key="pm_w1")
-        w2 = st.number_input("Weight w₂", value=0.4, format="%.3f", key="pm_w2")
-        r1 = st.number_input("Expected return R₁", value=0.08, format="%.4f", key="pm_r1")
-        r2 = st.number_input("Expected return R₂", value=0.12, format="%.4f", key="pm_r2")
-
-    with col_2p2:
-        s1 = st.number_input("Std dev σ₁", value=0.15, format="%.4f", key="pm_s1")
-        s2 = st.number_input("Std dev σ₂", value=0.20, format="%.4f", key="pm_s2")
-        rho12 = st.number_input("Correlation ρ₁₂", value=0.30, format="%.4f", key="pm_rho12")
-
-    with col_2p3:
-        er_p = w1 * r1 + w2 * r2
-        var_p = (w1**2)*(s1**2) + (w2**2)*(s2**2) + 2*w1*w2*s1*s2*rho12
-        sd_p = var_p**0.5 if var_p >= 0 else 0.0
-        st.write(f"E[R_p] = {er_p:.4f}  ({er_p*100:.2f}%)")
-        st.write(f"σ_p = {sd_p:.4f}  ({sd_p*100:.2f}%)")
-        st.caption("E[R_p] = w₁R₁ + w₂R₂;  σ_p² = w₁²σ₁² + w₂²σ₂² + 2w₁w₂σ₁σ₂ρ₁₂")
-
-    st.markdown("---")
-
-    # ---- N-Asset Portfolio Expected Return ----
-    st.subheader("N-Asset Portfolio Expected Return (Weights & Returns)")
-
-    pm_list_str = st.text_input(
-        "Enter weights and returns as pairs (w,R) in %; ex: 60,8; 40,12",
-        value="60,8; 40,12",
-        key="pm_nasset_str"
+with T_CALC:
+    # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+    # ════════════════════════════════════════════════════════════
+    # ── CFA CALCULATORS BY CATEGORY ─────────────────────────────
+    cfa_tab_q, cfa_tab_fi, cfa_tab_eq, cfa_tab_pm, cfa_tab_der = st.tabs(
+        ["QUANTITATIVE", "FIXED INCOME", "EQUITY", "PORTFOLIO", "DERIVATIVES"]
     )
 
-    try:
-        # Parse "60,8; 40,12" -> [(0.60, 0.08), (0.40, 0.12)]
-        pairs = []
-        for part in pm_list_str.split(";"):
-            part = part.strip()
-            if not part:
-                continue
-            w_str, r_str = part.split(",")
-            w_val = float(w_str.strip())/100
-            r_val = float(r_str.strip())/100
-            pairs.append((w_val, r_val))
+    # ================= QUANTITATIVE METHODS TAB =================
+    with cfa_tab_q:
+        st.markdown("### 📊 Quantitative Methods Calculators")
 
-        total_w = sum(w for w, _ in pairs)
-        er_n = sum(w * r for w, r in pairs)
-        st.write(f"Sum of weights = {total_w:.4f}")
-        st.write(f"E[R_p] = {er_n:.4f}  ({er_n*100:.2f}%)")
-    except Exception:
-        st.write("Check format. Example: 60,8; 40,12")
+        # ---- Future Value & Present Value ----
+        col_fv, col_pv, col_perp = st.columns(3)
 
-    st.markdown("---")
+        with col_fv:
+            st.caption("Future Value: FV = PV  (1 + r)^N")
+            q_pv = st.number_input("PV", value=1000.0, key="q_pv")
+            q_r  = st.number_input("Rate r", value=0.05, format="%.4f", key="q_r")
+            q_n  = st.number_input("Periods N", value=10, step=1, key="q_n")
+            q_fv = q_pv * (1 + q_r) ** q_n
+            st.write(f"FV = {q_fv:,.2f}")
 
-    # ---- CAPM: Required / Expected Return ----
-    st.subheader("CAPM: Required Return")
+        with col_pv:
+            st.caption("Present Value: PV = FV / (1 + r)^N")
+            q_fv2 = st.number_input("FV", value=1000.0, key="q_fv2")
+            q_r2  = st.number_input("Rate r ", value=0.05, format="%.4f", key="q_r2")
+            q_n2  = st.number_input("Periods N ", value=5, step=1, key="q_n2")
+            q_pv2 = q_fv2 / ((1 + q_r2) ** q_n2)
+            st.write(f"PV = {q_pv2:,.2f}")
 
-    col_capm1, col_capm2 = st.columns(2)
+        with col_perp:
+            st.caption("Perpetuity PV: PV = PMT / r")
+            q_pmt = st.number_input("PMT", value=100.0, key="q_pmt")
+            q_r3  = st.number_input("Discount rate r", value=0.04, format="%.4f", key="q_r3")
+            q_pv_perp = q_pmt / q_r3 if q_r3 != 0 else 0.0
+            st.write(f"PV = {q_pv_perp:,.2f}")
 
-    with col_capm1:
-        capm_rf = st.number_input("Risk-free rate R_f", value=0.03, format="%.4f", key="capm_rf")
-        capm_rm = st.number_input("Market return E[R_m]", value=0.09, format="%.4f", key="capm_rm")
-        capm_beta = st.number_input("Asset beta β", value=1.2, format="%.4f", key="capm_beta")
+        st.markdown("---")
 
-    with col_capm2:
-        capm_er = capm_rf + capm_beta * (capm_rm - capm_rf)
-        st.write(f"E[R_i] (CAPM) = {capm_er:.4f}  ({capm_er*100:.2f}%)")
-        st.caption("E[R_i] = R_f + β_i [E(R_m) − R_f]")
+        # ---- HPR & Geometric Mean Return ----
+        col_hpr, col_geo = st.columns(2)
 
-    st.markdown("---")
+        with col_hpr:
+            st.caption("Holding Period Return: HPR = (P_t − P_{t−1} + D_t) / P_{t−1}")
+            q_pt1 = st.number_input("P_t (ending price)", value=110.0, key="q_pt1")
+            q_pt0 = st.number_input("P_{t−1} (begin price)", value=100.0, key="q_pt0")
+            q_dt  = st.number_input("D_t (dividend)", value=2.0, key="q_dt")
+            hpr = (q_pt1 - q_pt0 + q_dt) / q_pt0 if q_pt0 != 0 else 0.0
+            st.write(f"HPR = {hpr:.4f}  ({hpr*100:.2f}%)")
 
-    # ---- Portfolio Beta ----
-    st.subheader("Portfolio Beta (Weighted Average)")
+        with col_geo:
+            st.caption("Geometric Mean: R_G = [(1+R1)…(1+Rn)]^(1/n) − 1")
+            q_geo_str = st.text_input("Returns (comma %, e.g. 10,-5,8)", value="10,-5,8", key="q_geo")
+            try:
+                vals = [float(x.strip())/100 for x in q_geo_str.split(",") if x.strip() != ""]
+                if len(vals) > 0:
+                    prod = 1.0
+                    for r in vals:
+                        prod *= (1 + r)
+                    r_geo = prod**(1/len(vals)) - 1
+                    st.write(f"Geometric mean = {r_geo:.4f}  ({r_geo*100:.2f}%)")
+                else:
+                    st.write("Enter at least one return.")
+            except Exception:
+                st.write("Check return format.")
 
-    col_pb1, col_pb2 = st.columns(2)
+        st.markdown("---")
 
-    with col_pb1:
-        beta_str = st.text_input(
-            "Enter weights and betas (w,β); ex: 50,1.1; 30,0.8; 20,1.4",
-            value="50,1.1; 30,0.8; 20,1.4",
-            key="pm_beta_str"
+        # ---- Sharpe, CV, Z‑score ----
+        col_sh, col_cv, col_z = st.columns(3)
+
+        with col_sh:
+            st.caption("Sharpe Ratio: (r_p − r_f) / σ_p")
+            q_rp = st.number_input("Portfolio return r_p", value=0.08, format="%.4f", key="q_rp")
+            q_rf = st.number_input("Risk‑free r_f",       value=0.03, format="%.4f", key="q_rf")
+            q_sp = st.number_input("σ_p",                 value=0.15, format="%.4f", key="q_sp")
+            sharpe = (q_rp - q_rf) / q_sp if q_sp != 0 else 0.0
+            st.write(f"Sharpe = {sharpe:.3f}")
+
+        with col_cv:
+            st.caption("Coefficient of Variation: CV = s / X̄")
+            q_s  = st.number_input("Standard deviation s", value=0.12, format="%.4f", key="q_s")
+            q_xb = st.number_input("Mean X̄",              value=0.10, format="%.4f", key="q_xb")
+            cv = q_s / q_xb if q_xb != 0 else 0.0
+            st.write(f"CV = {cv:.3f}")
+
+        with col_z:
+            st.caption("Z‑Score: z = (x − μ) / σ")
+            q_x  = st.number_input("Observation x", value=75.0, key="q_x")
+            q_mu = st.number_input("Mean μ",        value=70.0, key="q_mu")
+            q_sd = st.number_input("Std dev σ",     value=10.0, key="q_sd")
+            z = (q_x - q_mu) / q_sd if q_sd != 0 else 0.0
+            st.write(f"z = {z:.3f}")
+
+        st.markdown("---")
+
+        # ---- Confidence Interval & Correlation ----
+        col_ci, col_corr = st.columns(2)
+
+        with col_ci:
+            st.caption("CI: X̄  z_{α/2}  (σ/√n)")
+            q_xb2 = st.number_input("Sample mean X̄", value=10.0, key="q_xb2")
+            q_sig = st.number_input("Population σ",   value=2.0,  key="q_sig")
+            q_n3  = st.number_input("Sample size n",  value=30,   step=1, key="q_n3")
+            q_zc  = st.number_input("z_{α/2}",        value=1.96, key="q_zc")
+            if q_n3 > 0:
+                se = q_sig / (q_n3 ** 0.5)
+                low = q_xb2 - q_zc * se
+                high = q_xb2 + q_zc * se
+                st.write(f"CI: [{low:.3f}, {high:.3f}]")
+            else:
+                st.write("n must be > 0.")
+
+        with col_corr:
+            st.caption("Correlation: corr = COV(X,Y) / (σ_X σ_Y)")
+            q_cov = st.number_input("Covariance COV(X,Y)", value=0.015, format="%.4f", key="q_cov")
+            q_sx  = st.number_input("σ_X", value=0.10, format="%.4f", key="q_sx")
+            q_sy  = st.number_input("σ_Y", value=0.12, format="%.4f", key="q_sy")
+            corr = q_cov / (q_sx * q_sy) if q_sx != 0 and q_sy != 0 else 0.0
+            st.write(f"Correlation = {corr:.3f}")
+    # ================= FIXED INCOME TAB =================
+    with cfa_tab_fi:
+        st.markdown("### 🏦 Fixed Income Calculators")
+
+        # ---- Basic Bond Pricing (level YTM) ----
+        st.subheader("Bond Price (Level Yield)")
+        col_basic1, col_basic2 = st.columns(2)
+
+        with col_basic1:
+            fi_par   = st.number_input("Par value (FV)", value=1000.0, key="fi_par")
+            fi_coupon_rate = st.number_input("Annual coupon rate", value=0.05, format="%.4f", key="fi_cpn_rate")
+            fi_yield = st.number_input("Yield to maturity (YTM)", value=0.06, format="%.4f", key="fi_ytm")
+        with col_basic2:
+            fi_maturity = st.number_input("Years to maturity", value=5.0, step=1.0, key="fi_mat")
+            fi_freq     = st.number_input("Coupons per year (m)", value=2, step=1, min_value=1, key="fi_freq")
+
+        cpn = fi_par * fi_coupon_rate / fi_freq
+        n   = int(fi_maturity * fi_freq)
+        r   = fi_yield / fi_freq
+
+        pv_coupons = sum([cpn / ((1 + r) ** t) for t in range(1, n + 1)])
+        pv_par     = fi_par / ((1 + r) ** n)
+        fi_price   = pv_coupons + pv_par
+
+        st.write(f"Bond price = {fi_price:,.2f}")
+
+        st.markdown("---")
+
+        # ---- Flat price, accrued interest, full price (Street convention simplified) ----
+        st.subheader("Flat Price, Accrued Interest, Full Price")
+        col_ai1, col_ai2 = st.columns(2)
+
+        with col_ai1:
+            clean_coupon_rate = st.number_input("Coupon rate (for AI)", value=0.05, format="%.4f", key="ai_cpn_rate")
+            clean_freq        = st.number_input("Coupons per year", value=2, step=1, min_value=1, key="ai_freq")
+            days_since_last   = st.number_input("Days since last coupon", value=30.0, key="ai_days_since")
+            days_in_period    = st.number_input("Days in coupon period", value=180.0, key="ai_days_period")
+        with col_ai2:
+            quoted_clean_price = st.number_input("Quoted flat (clean) price", value=fi_price, key="ai_clean_price")
+
+        cpn_ai = fi_par * clean_coupon_rate / clean_freq
+        accrued_interest = cpn_ai * (days_since_last / days_in_period)
+        full_price = quoted_clean_price + accrued_interest
+
+        st.write(f"Accrued interest = {accrued_interest:,.4f}")
+        st.write(f"Full (dirty) price = {full_price:,.2f}")
+
+        st.markdown("---")
+
+        # ---- Current yield and simple yield ----
+        st.subheader("Current Yield & Simple Yield")
+        col_y1, col_y2 = st.columns(2)
+
+        with col_y1:
+            cy_coupon = st.number_input("Annual coupon (amount)", value=fi_par * fi_coupon_rate, key="cy_coupon_amt")
+            cy_price  = st.number_input("Bond price for current yield", value=fi_price, key="cy_price")
+            current_yield = cy_coupon / cy_price if cy_price != 0 else 0.0
+            st.write(f"Current yield = {current_yield:.4f}  ({current_yield*100:.2f}%)")
+
+        with col_y2:
+            sy_years_to_maturity = st.number_input("Years to maturity (for simple yield)", value=fi_maturity, key="sy_years")
+            sy_par               = st.number_input("Par value (for simple yield)", value=fi_par, key="sy_par")
+            sy_price             = st.number_input("Price (for simple yield)", value=fi_price, key="sy_price")
+            if sy_years_to_maturity > 0 and sy_price != 0:
+                annual_coupon = sy_par * fi_coupon_rate
+                straight_line_amort = (sy_par - sy_price) / sy_years_to_maturity
+                simple_yield = (annual_coupon + straight_line_amort) / sy_price
+            else:
+                simple_yield = 0.0
+            st.write(f"Simple yield = {simple_yield:.4f}  ({simple_yield*100:.2f}%)")
+
+        st.markdown("---")
+
+        # ---- Money market discount & add-on rates ----
+        st.subheader("Money Market Instruments")
+        col_mm1, col_mm2 = st.columns(2)
+
+        with col_mm1:
+            mm_fv   = st.number_input("Face value (FV)", value=100000.0, key="mm_fv")
+            mm_disc = st.number_input("Discount rate (DR)", value=0.03, format="%.4f", key="mm_disc")
+            mm_days = st.number_input("Days to maturity", value=90.0, key="mm_days")
+            mm_day_count = st.number_input("Days in year (money mkt)", value=360.0, key="mm_year")
+            mm_price = mm_fv * (1 - mm_disc * (mm_days / mm_day_count))
+            st.write(f"Price (discount basis) = {mm_price:,.2f}")
+
+        with col_mm2:
+            mm_price2 = st.number_input("Price (for add-on)", value=mm_price, key="mm_price2")
+            mm_addon_days = st.number_input("Days to maturity (add-on)", value=mm_days, key="mm_addon_days")
+            mm_year2 = st.number_input("Days in year (add-on)", value=365.0, key="mm_year2")
+            if mm_price2 != 0:
+                add_on_rate = (mm_fv - mm_price2) / mm_price2 * (mm_year2 / mm_addon_days)
+            else:
+                add_on_rate = 0.0
+            st.write(f"Add-on yield (AOR) = {add_on_rate:.4f}  ({add_on_rate*100:.2f}%)")
+
+        st.markdown("---")
+
+        # ---- Duration and Convexity (approximate, price-yield) ----
+        st.subheader("Effective Duration & Convexity (Price-Yield Approximation)")
+        col_dc1, col_dc2 = st.columns(2)
+
+        with col_dc1:
+            p0 = st.number_input("Current full price P0", value=fi_price, key="dur_p0")
+            p_up = st.number_input("Price if yield ↑ (P−)", value=fi_price * 0.95, key="dur_p_minus")
+            p_down = st.number_input("Price if yield ↓ (P+)", value=fi_price * 1.05, key="dur_p_plus")
+            delta_y = st.number_input("Change in yield (Δy, decimal)", value=0.01, format="%.4f", key="dur_dy")
+
+        with col_dc2:
+            if delta_y != 0 and p0 != 0:
+                eff_dur = (p_down - p_up) / (2 * p0 * delta_y)
+                eff_conv = (p_down + p_up - 2 * p0) / (p0 * (delta_y ** 2))
+            else:
+                eff_dur = 0.0
+                eff_conv = 0.0
+            st.write(f"Effective duration ≈ {eff_dur:.4f}")
+            st.write(f"Effective convexity ≈ {eff_conv:.4f}")
+
+        st.markdown("---")
+
+        # ---- Price change using duration + convexity ----
+        st.subheader("Price Change (Duration + Convexity)")
+        col_pc1, col_pc2 = st.columns(2)
+
+        with col_pc1:
+            pc_p0 = st.number_input("Initial full price", value=fi_price, key="pc_p0")
+            pc_dur = st.number_input("Effective/Modified duration", value=eff_dur, key="pc_dur")
+            pc_conv = st.number_input("Effective convexity", value=eff_conv, key="pc_conv")
+            pc_dy = st.number_input("Yield change Δy (decimal)", value=-0.01, format="%.4f", key="pc_dy")
+
+        with col_pc2:
+            # %ΔP ≈ (−Dur  Δy) + (0.5  Conv  (Δy)^2)
+            pct_delta_p = (-pc_dur * pc_dy) + (0.5 * pc_conv * (pc_dy ** 2))
+            new_price = pc_p0 * (1 + pct_delta_p)
+            st.write(f"Approx. %ΔPrice = {pct_delta_p*100:.3f}%")
+            st.write(f"Estimated new price = {new_price:,.2f}")
+    # ================= EQUITY TAB =================
+    with cfa_tab_eq:
+        st.markdown("### 📈 Equity Valuation Calculators")
+
+        # ---- Gordon Growth (Dividend Discount Model) ----
+        st.subheader("Dividend Discount Model (Constant Growth)")
+        col_ddm1, col_ddm2 = st.columns(2)
+
+        with col_ddm1:
+            eq_d1 = st.number_input("Next dividend D₁", value=2.0, key="eq_d1")
+            eq_re = st.number_input("Required return r", value=0.08, format="%.4f", key="eq_re")
+            eq_g  = st.number_input("Growth rate g", value=0.03, format="%.4f", key="eq_g")
+
+        with col_ddm2:
+            if eq_re > eq_g:
+                ddm_value = eq_d1 / (eq_re - eq_g)
+            else:
+                ddm_value = 0.0
+            st.write(f"Intrinsic value (P₀) = {ddm_value:,.2f}")
+            st.caption("Formula: P₀ = D₁ / (r − g)")
+
+        st.markdown("---")
+
+        # ---- Multi-stage DDM (2-stage) ----
+        st.subheader("Two-Stage Dividend Discount Model")
+        col_2ddm1, col_2ddm2 = st.columns(2)
+
+        with col_2ddm1:
+            ms_d0 = st.number_input("Current dividend D₀", value=1.50, key="ms_d0")
+            ms_g1 = st.number_input("High growth rate g₁ (years 1–N)", value=0.10, format="%.4f", key="ms_g1")
+            ms_g2 = st.number_input("Stable growth rate g₂ (after N)", value=0.04, format="%.4f", key="ms_g2")
+            ms_re = st.number_input("Required return r", value=0.09, format="%.4f", key="ms_re")
+            ms_n  = st.number_input("High growth period N (years)", value=5, step=1, min_value=1, key="ms_n")
+
+        with col_2ddm2:
+            dividends = []
+            pv_dividends = 0.0
+            for t in range(1, ms_n + 1):
+                dt = ms_d0 * ((1 + ms_g1) ** t)
+                dividends.append(dt)
+                pv_dividends += dt / ((1 + ms_re) ** t)
+
+            d_n1 = ms_d0 * ((1 + ms_g1) ** ms_n) * (1 + ms_g2)
+            if ms_re > ms_g2:
+                terminal_value = d_n1 / (ms_re - ms_g2)
+                pv_terminal = terminal_value / ((1 + ms_re) ** ms_n)
+            else:
+                terminal_value = 0.0
+                pv_terminal = 0.0
+
+            ms_p0 = pv_dividends + pv_terminal
+            st.write(f"Intrinsic value (P₀) ≈ {ms_p0:,.2f}")
+            st.caption("Sum PV of high-growth dividends + PV of terminal value at year N.")
+
+        st.markdown("---")
+
+        # ---- Free Cash Flow to Equity (FCFE) Model ----
+        st.subheader("Free Cash Flow to Equity (FCFE) Valuation")
+        col_fcfe1, col_fcfe2 = st.columns(2)
+
+        with col_fcfe1:
+            fcfe_1 = st.number_input("Next year FCFE₁", value=5.0, key="fcfe_1")
+            fcfe_re = st.number_input("Required return to equity r", value=0.10, format="%.4f", key="fcfe_re")
+            fcfe_g  = st.number_input("Long-term growth rate g", value=0.04, format="%.4f", key="fcfe_g")
+
+        with col_fcfe2:
+            if fcfe_re > fcfe_g:
+                fcfe_p0 = fcfe_1 / (fcfe_re - fcfe_g)
+            else:
+                fcfe_p0 = 0.0
+            st.write(f"Equity value (per share) = {fcfe_p0:,.2f}")
+            st.caption("Constant-growth FCFE: P₀ = FCFE₁ / (r − g)")
+
+        st.markdown("---")
+
+        # ---- P/E based valuation ----
+        st.subheader("P/E-Based Valuation")
+        col_pe1, col_pe2 = st.columns(2)
+
+        with col_pe1:
+            pe_eps = st.number_input("Expected EPS₁", value=4.0, key="pe_eps")
+            pe_justified = st.number_input("Justified P/E or target P/E", value=15.0, key="pe_justified")
+
+        with col_pe2:
+            pe_price = pe_eps * pe_justified
+            st.write(f"Value from P/E = {pe_price:,.2f}")
+            st.caption("P₀ = (Justified P/E)  EPS₁")
+
+        st.markdown("---")
+
+        # ---- Justified leading and trailing P/E (Gordon) ----
+        st.subheader("Justified P/E (Gordon Growth)")
+        col_jpe1, col_jpe2 = st.columns(2)
+
+        with col_jpe1:
+            jpe_payout = st.number_input("Dividend payout ratio (D₁ / E₁)", value=0.40, format="%.4f", key="jpe_payout")
+            jpe_re = st.number_input("Required return r", value=0.09, format="%.4f", key="jpe_re")
+            jpe_g  = st.number_input("Growth rate g", value=0.04, format="%.4f", key="jpe_g")
+
+        with col_jpe2:
+            if jpe_re > jpe_g:
+                justified_leading_pe = jpe_payout / (jpe_re - jpe_g)
+            else:
+                justified_leading_pe = 0.0
+            st.write(f"Justified leading P/E = {justified_leading_pe:.2f}")
+            st.caption("Leading P/E = payout ratio / (r − g)")
+
+        st.markdown("---")
+
+        # ---- Residual Income Model ----
+        st.subheader("Residual Income Valuation (Simple Single-stage)")
+        col_ri1, col_ri2 = st.columns(2)
+
+        with col_ri1:
+            ri_b0 = st.number_input("Current book value per share B₀", value=20.0, key="ri_b0")
+            ri_roe = st.number_input("Return on equity ROE", value=0.15, format="%.4f", key="ri_roe")
+            ri_re  = st.number_input("Required return r", value=0.10, format="%.4f", key="ri_re")
+            ri_growth = st.number_input("Growth rate of residual income g", value=0.03, format="%.4f", key="ri_growth")
+
+        with col_ri2:
+            # Residual income in year 1: RI₁ = (ROE − r)  B₀
+            ri1 = (ri_roe - ri_re) * ri_b0
+            if ri_re > ri_growth:
+                pv_ri_stream = ri1 / (ri_re - ri_growth)
+            else:
+                pv_ri_stream = 0.0
+            ri_p0 = ri_b0 + pv_ri_stream
+            st.write(f"Intrinsic value (P₀) ≈ {ri_p0:,.2f}")
+            st.caption("P₀ = B₀ + PV of expected residual income stream.")
+
+        st.markdown("---")
+
+        # ---- Equity return metrics: Dividend yield, capital gains yield, total return ----
+        st.subheader("Dividend Yield, Capital Gains Yield, Total Return")
+        col_ret1, col_ret2, col_ret3 = st.columns(3)
+
+        with col_ret1:
+            er_p0 = st.number_input("Initial price P₀", value=50.0, key="er_p0")
+            er_p1 = st.number_input("Ending price P₁", value=55.0, key="er_p1")
+            er_d1 = st.number_input("Dividend D₁", value=2.0, key="er_d1")
+
+        with col_ret2:
+            if er_p0 != 0:
+                div_yield = er_d1 / er_p0
+                cap_gain_yield = (er_p1 - er_p0) / er_p0
+                total_return = (er_p1 - er_p0 + er_d1) / er_p0
+            else:
+                div_yield = cap_gain_yield = total_return = 0.0
+
+        with col_ret3:
+            st.write(f"Dividend yield = {div_yield:.4f}  ({div_yield*100:.2f}%)")
+            st.write(f"Capital gains yield = {cap_gain_yield:.4f}  ({cap_gain_yield*100:.2f}%)")
+            st.write(f"Total return = {total_return:.4f}  ({total_return*100:.2f}%)")
+    # ================= PORTFOLIO MANAGEMENT TAB =================
+    with cfa_tab_pm:
+        st.markdown("### 📚 Portfolio Management Calculators")
+
+        # ---- 2-Asset Portfolio: Expected Return & Risk ----
+        st.subheader("Two-Asset Portfolio: E[R_p] and σ_p")
+
+        col_2p1, col_2p2, col_2p3 = st.columns(3)
+
+        with col_2p1:
+            w1 = st.number_input("Weight w₁", value=0.6, format="%.3f", key="pm_w1")
+            w2 = st.number_input("Weight w₂", value=0.4, format="%.3f", key="pm_w2")
+            r1 = st.number_input("Expected return R₁", value=0.08, format="%.4f", key="pm_r1")
+            r2 = st.number_input("Expected return R₂", value=0.12, format="%.4f", key="pm_r2")
+
+        with col_2p2:
+            s1 = st.number_input("Std dev σ₁", value=0.15, format="%.4f", key="pm_s1")
+            s2 = st.number_input("Std dev σ₂", value=0.20, format="%.4f", key="pm_s2")
+            rho12 = st.number_input("Correlation ρ₁₂", value=0.30, format="%.4f", key="pm_rho12")
+
+        with col_2p3:
+            er_p = w1 * r1 + w2 * r2
+            var_p = (w1**2)*(s1**2) + (w2**2)*(s2**2) + 2*w1*w2*s1*s2*rho12
+            sd_p = var_p**0.5 if var_p >= 0 else 0.0
+            st.write(f"E[R_p] = {er_p:.4f}  ({er_p*100:.2f}%)")
+            st.write(f"σ_p = {sd_p:.4f}  ({sd_p*100:.2f}%)")
+            st.caption("E[R_p] = w₁R₁ + w₂R₂;  σ_p = w₁σ₁ + w₂σ₂ + 2w₁w₂σ₁σ₂ρ₁₂")
+
+        st.markdown("---")
+
+        # ---- N-Asset Portfolio Expected Return ----
+        st.subheader("N-Asset Portfolio Expected Return (Weights & Returns)")
+
+        pm_list_str = st.text_input(
+            "Enter weights and returns as pairs (w,R) in %; ex: 60,8; 40,12",
+            value="60,8; 40,12",
+            key="pm_nasset_str"
         )
 
-    with col_pb2:
         try:
-            pairs_b = []
-            for part in beta_str.split(";"):
+            # Parse "60,8; 40,12" -> [(0.60, 0.08), (0.40, 0.12)]
+            pairs = []
+            for part in pm_list_str.split(";"):
                 part = part.strip()
                 if not part:
                     continue
-                w_str, b_str = part.split(",")
+                w_str, r_str = part.split(",")
                 w_val = float(w_str.strip())/100
-                b_val = float(b_str.strip())
-                pairs_b.append((w_val, b_val))
+                r_val = float(r_str.strip())/100
+                pairs.append((w_val, r_val))
 
-            beta_p = sum(w * b for w, b in pairs_b)
-            w_sum = sum(w for w, _ in pairs_b)
-            st.write(f"Sum of weights = {w_sum:.4f}")
-            st.write(f"Portfolio beta β_p = {beta_p:.4f}")
+            total_w = sum(w for w, _ in pairs)
+            er_n = sum(w * r for w, r in pairs)
+            st.write(f"Sum of weights = {total_w:.4f}")
+            st.write(f"E[R_p] = {er_n:.4f}  ({er_n*100:.2f}%)")
         except Exception:
-            st.write("Check format. Example: 50,1.1; 30,0.8; 20,1.4")
+            st.write("Check format. Example: 60,8; 40,12")
 
-    st.markdown("---")
+        st.markdown("---")
 
-    # ---- Minimum-Variance Weight (2-Asset) ----
-    st.subheader("Minimum-Variance Portfolio (Two Assets)")
+        # ---- CAPM: Required / Expected Return ----
+        st.subheader("CAPM: Required Return")
 
-    col_mvp1, col_mvp2 = st.columns(2)
+        col_capm1, col_capm2 = st.columns(2)
 
-    with col_mvp1:
-        mvp_s1 = st.number_input("σ₁ (asset 1)", value=0.15, format="%.4f", key="mvp_s1")
-        mvp_s2 = st.number_input("σ₂ (asset 2)", value=0.20, format="%.4f", key="mvp_s2")
-        mvp_rho = st.number_input("Correlation ρ₁₂", value=0.30, format="%.4f", key="mvp_rho")
+        with col_capm1:
+            capm_rf = st.number_input("Risk-free rate R_f", value=0.03, format="%.4f", key="capm_rf")
+            capm_rm = st.number_input("Market return E[R_m]", value=0.09, format="%.4f", key="capm_rm")
+            capm_beta = st.number_input("Asset beta β", value=1.2, format="%.4f", key="capm_beta")
 
-    with col_mvp2:
-        denom = (mvp_s1**2 + mvp_s2**2 - 2*mvp_s1*mvp_s2*mvp_rho)
-        if denom != 0:
-            w1_mvp = (mvp_s2**2 - mvp_rho*mvp_s1*mvp_s2) / denom
-            w2_mvp = 1 - w1_mvp
-        else:
-            w1_mvp = w2_mvp = 0.0
+        with col_capm2:
+            capm_er = capm_rf + capm_beta * (capm_rm - capm_rf)
+            st.write(f"E[R_i] (CAPM) = {capm_er:.4f}  ({capm_er*100:.2f}%)")
+            st.caption("E[R_i] = R_f + β_i [E(R_m) − R_f]")
 
-        st.write(f"w₁(min-var) = {w1_mvp:.4f}")
-        st.write(f"w₂(min-var) = {w2_mvp:.4f}")
-        st.caption("Formula from Markowitz minimum-variance two-asset case.")
+        st.markdown("---")
 
-    st.markdown("---")
+        # ---- Portfolio Beta ----
+        st.subheader("Portfolio Beta (Weighted Average)")
 
-    # ---- Sharpe Ratio for Portfolio ----
-    st.subheader("Portfolio Sharpe Ratio")
+        col_pb1, col_pb2 = st.columns(2)
 
-    col_shp1, col_shp2 = st.columns(2)
+        with col_pb1:
+            beta_str = st.text_input(
+                "Enter weights and betas (w,β); ex: 50,1.1; 30,0.8; 20,1.4",
+                value="50,1.1; 30,0.8; 20,1.4",
+                key="pm_beta_str"
+            )
 
-    with col_shp1:
-        shp_rp = st.number_input("Portfolio expected return E[R_p]", value=er_p, format="%.4f", key="shp_rp")
-        shp_rf = st.number_input("Risk-free rate R_f (Sharpe)", value=capm_rf, format="%.4f", key="shp_rf")
-        shp_sd = st.number_input("Portfolio σ_p", value=sd_p, format="%.4f", key="shp_sd")
+        with col_pb2:
+            try:
+                pairs_b = []
+                for part in beta_str.split(";"):
+                    part = part.strip()
+                    if not part:
+                        continue
+                    w_str, b_str = part.split(",")
+                    w_val = float(w_str.strip())/100
+                    b_val = float(b_str.strip())
+                    pairs_b.append((w_val, b_val))
 
-    with col_shp2:
-        shp_ratio = (shp_rp - shp_rf) / shp_sd if shp_sd != 0 else 0.0
-        st.write(f"Sharpe ratio = {shp_ratio:.4f}")
-        st.caption("Sharpe = (E[R_p] − R_f) / σ_p")
-# ================= DERIVATIVES TAB =================
-with cfa_tab_der:
-    st.markdown("### ⚙️ Derivatives Pricing & Payoff Calculators")
+                beta_p = sum(w * b for w, b in pairs_b)
+                w_sum = sum(w for w, _ in pairs_b)
+                st.write(f"Sum of weights = {w_sum:.4f}")
+                st.write(f"Portfolio beta β_p = {beta_p:.4f}")
+            except Exception:
+                st.write("Check format. Example: 50,1.1; 30,0.8; 20,1.4")
 
-    # ---------- FORWARDS & FUTURES ----------
-    st.subheader("Forward/Futures Pricing (No Income, Known Income, Yield)")
+        st.markdown("---")
 
-    col_fwd1, col_fwd2 = st.columns(2)
+        # ---- Minimum-Variance Weight (2-Asset) ----
+        st.subheader("Minimum-Variance Portfolio (Two Assets)")
 
-    with col_fwd1:
-        f_S0   = st.number_input("Spot price S₀", value=100.0, key="f_S0")
-        f_r    = st.number_input("Risk-free rate r (annual, dec)", value=0.05, format="%.4f", key="f_r")
-        f_T    = st.number_input("Time to maturity T (years)", value=1.0, format="%.4f", key="f_T")
-        f_inc  = st.number_input("Present value of known income (PV(dividends))", value=0.0, key="f_inc")
-        f_yield= st.number_input("Dividend/Convenience yield q (if using yield model)", value=0.0, format="%.4f", key="f_q")
+        col_mvp1, col_mvp2 = st.columns(2)
 
-    with col_fwd2:
-        # Discrete compounding, no income: F0 = S0 × (1+r)^T
-        F0_no_income = f_S0 * ((1 + f_r) ** f_T)
+        with col_mvp1:
+            mvp_s1 = st.number_input("σ₁ (asset 1)", value=0.15, format="%.4f", key="mvp_s1")
+            mvp_s2 = st.number_input("σ₂ (asset 2)", value=0.20, format="%.4f", key="mvp_s2")
+            mvp_rho = st.number_input("Correlation ρ₁₂", value=0.30, format="%.4f", key="mvp_rho")
 
-        # Discrete compounding, known PV income: F0 = (S0 − PV(inc)) × (1+r)^T
-        F0_pv_income = (f_S0 - f_inc) * ((1 + f_r) ** f_T)
+        with col_mvp2:
+            denom = (mvp_s1**2 + mvp_s2**2 - 2*mvp_s1*mvp_s2*mvp_rho)
+            if denom != 0:
+                w1_mvp = (mvp_s2**2 - mvp_rho*mvp_s1*mvp_s2) / denom
+                w2_mvp = 1 - w1_mvp
+            else:
+                w1_mvp = w2_mvp = 0.0
 
-        # Continuous yield model (approx): F0 = S0 × e^{(r−q)T}
-        import math
-        F0_yield = f_S0 * math.exp((f_r - f_yield) * f_T)
+            st.write(f"w₁(min-var) = {w1_mvp:.4f}")
+            st.write(f"w₂(min-var) = {w2_mvp:.4f}")
+            st.caption("Formula from Markowitz minimum-variance two-asset case.")
 
-        st.write(f"F₀ (no income) ≈ {F0_no_income:,.4f}")
-        st.write(f"F₀ (PV income) ≈ {F0_pv_income:,.4f}")
-        st.write(f"F₀ (yield model) ≈ {F0_yield:,.4f}")
-        st.caption("Common forms: F₀ = S₀(1+r)^T ; F₀ = (S₀ − PV(inc))(1+r)^T ; F₀ = S₀ e^{(r−q)T}")
+        st.markdown("---")
 
-    st.markdown("---")
+        # ---- Sharpe Ratio for Portfolio ----
+        st.subheader("Portfolio Sharpe Ratio")
 
-    st.subheader("Forward/Futures Payoff & Profit at Expiration")
+        col_shp1, col_shp2 = st.columns(2)
 
-    col_fpay1, col_fpay2 = st.columns(2)
+        with col_shp1:
+            shp_rp = st.number_input("Portfolio expected return E[R_p]", value=er_p, format="%.4f", key="shp_rp")
+            shp_rf = st.number_input("Risk-free rate R_f (Sharpe)", value=capm_rf, format="%.4f", key="shp_rf")
+            shp_sd = st.number_input("Portfolio σ_p", value=sd_p, format="%.4f", key="shp_sd")
 
-    with col_fpay1:
-        f_ST   = st.number_input("Underlying price at maturity S_T", value=110.0, key="f_ST")
-        f_F0   = st.number_input("Contract forward price F₀", value=F0_no_income, key="f_F0")
-        f_long = st.checkbox("Show long position payoff", value=True, key="f_long")
-        f_short= st.checkbox("Show short position payoff", value=True, key="f_short")
+        with col_shp2:
+            shp_ratio = (shp_rp - shp_rf) / shp_sd if shp_sd != 0 else 0.0
+            st.write(f"Sharpe ratio = {shp_ratio:.4f}")
+            st.caption("Sharpe = (E[R_p] − R_f) / σ_p")
+    # ================= DERIVATIVES TAB =================
+    with cfa_tab_der:
+        st.markdown("### ⚙️ Derivatives Pricing & Payoff Calculators")
 
-    with col_fpay2:
-        if f_long:
-            long_payoff = f_ST - f_F0
-            st.write(f"Long forward payoff = S_T − F₀ = {long_payoff:,.4f}")
-        if f_short:
-            short_payoff = f_F0 - f_ST
-            st.write(f"Short forward payoff = F₀ − S_T = {short_payoff:,.4f}")
-        st.caption("Ignoring financing; profit ≈ payoff at expiration for forwards/futures.")
+        # ---------- FORWARDS & FUTURES ----------
+        st.subheader("Forward/Futures Pricing (No Income, Known Income, Yield)")
 
-    st.markdown("---")
+        col_fwd1, col_fwd2 = st.columns(2)
 
-    # ---------- OPTIONS PAYOFF (CALL & PUT) ----------
-    st.subheader("European Call & Put Payoff / Profit")
+        with col_fwd1:
+            f_S0   = st.number_input("Spot price S₀", value=100.0, key="f_S0")
+            f_r    = st.number_input("Risk-free rate r (annual, dec)", value=0.05, format="%.4f", key="f_r")
+            f_T    = st.number_input("Time to maturity T (years)", value=1.0, format="%.4f", key="f_T")
+            f_inc  = st.number_input("Present value of known income (PV(dividends))", value=0.0, key="f_inc")
+            f_yield= st.number_input("Dividend/Convenience yield q (if using yield model)", value=0.0, format="%.4f", key="f_q")
 
-    col_opt1, col_opt2, col_opt3 = st.columns(3)
+        with col_fwd2:
+            # Discrete compounding, no income: F0 = S0  (1+r)^T
+            F0_no_income = f_S0 * ((1 + f_r) ** f_T)
 
-    with col_opt1:
-        o_ST  = st.number_input("Underlying price at expiration S_T", value=100.0, key="o_ST")
-        o_X   = st.number_input("Strike price X", value=95.0, key="o_X")
-        o_c0  = st.number_input("Call premium c₀", value=4.0, key="o_c0")
-        o_p0  = st.number_input("Put premium p₀", value=3.0, key="o_p0")
+            # Discrete compounding, known PV income: F0 = (S0 − PV(inc))  (1+r)^T
+            F0_pv_income = (f_S0 - f_inc) * ((1 + f_r) ** f_T)
 
-    with col_opt2:
-        # Payoffs
-        call_payoff = max(0.0, o_ST - o_X)
-        put_payoff  = max(0.0, o_X - o_ST)
-        st.write(f"Call payoff = max(0, S_T − X) = {call_payoff:.4f}")
-        st.write(f"Put payoff = max(0, X − S_T) = {put_payoff:.4f}")
+            # Continuous yield model (approx): F0 = S0  e^{(r−q)T}
+            import math
+            F0_yield = f_S0 * math.exp((f_r - f_yield) * f_T)
 
-    with col_opt3:
-        # Profit = payoff − premium
-        call_profit_long  = call_payoff - o_c0
-        put_profit_long   = put_payoff - o_p0
-        call_profit_short = -call_profit_long
-        put_profit_short  = -put_profit_long
+            st.write(f"F₀ (no income) ≈ {F0_no_income:,.4f}")
+            st.write(f"F₀ (PV income) ≈ {F0_pv_income:,.4f}")
+            st.write(f"F₀ (yield model) ≈ {F0_yield:,.4f}")
+            st.caption("Common forms: F₀ = S₀(1+r)^T ; F₀ = (S₀ − PV(inc))(1+r)^T ; F₀ = S₀ e^{(r−q)T}")
 
-        st.write(f"Long call profit = {call_profit_long:.4f}")
-        st.write(f"Short call profit = {call_profit_short:.4f}")
-        st.write(f"Long put profit = {put_profit_long:.4f}")
-        st.write(f"Short put profit = {put_profit_short:.4f}")
-        st.caption("European options, profit at expiration ignoring time value of money.")
+        st.markdown("---")
 
-    st.markdown("---")
+        st.subheader("Forward/Futures Payoff & Profit at Expiration")
 
-    # ---------- BASIC STRATEGIES ----------
-    st.subheader("Option Strategies: Protective Put & Covered Call")
+        col_fpay1, col_fpay2 = st.columns(2)
 
-    col_str1, col_str2 = st.columns(2)
+        with col_fpay1:
+            f_ST   = st.number_input("Underlying price at maturity S_T", value=110.0, key="f_ST")
+            f_F0   = st.number_input("Contract forward price F₀", value=F0_no_income, key="f_F0")
+            f_long = st.checkbox("Show long position payoff", value=True, key="f_long")
+            f_short= st.checkbox("Show short position payoff", value=True, key="f_short")
 
-    with col_str1:
-        s_S0  = st.number_input("Stock purchase price S₀", value=100.0, key="s_S0")
-        s_ST  = st.number_input("Stock price at expiration S_T (strat)", value=o_ST, key="s_ST")
-        s_X   = st.number_input("Option strike X (strat)", value=o_X, key="s_X")
-        s_c0  = st.number_input("Call premium c₀ (strat)", value=o_c0, key="s_c0")
-        s_p0  = st.number_input("Put premium p₀ (strat)", value=o_p0, key="s_p0")
+        with col_fpay2:
+            if f_long:
+                long_payoff = f_ST - f_F0
+                st.write(f"Long forward payoff = S_T − F₀ = {long_payoff:,.4f}")
+            if f_short:
+                short_payoff = f_F0 - f_ST
+                st.write(f"Short forward payoff = F₀ − S_T = {short_payoff:,.4f}")
+            st.caption("Ignoring financing; profit ≈ payoff at expiration for forwards/futures.")
 
-    with col_str2:
-        # Protective put: long stock + long put
-        stock_payoff = s_ST
-        put_payoff_strat = max(0.0, s_X - s_ST)
-        prot_put_profit = stock_payoff + put_payoff_strat - s_S0 - s_p0
+        st.markdown("---")
 
-        # Covered call: long stock + short call
-        call_payoff_strat = max(0.0, s_ST - s_X)
-        cov_call_profit = stock_payoff - call_payoff_strat - s_S0 + s_c0
+        # ---------- OPTIONS PAYOFF (CALL & PUT) ----------
+        st.subheader("European Call & Put Payoff / Profit")
 
-        st.write(f"Protective put profit = {prot_put_profit:.4f}")
-        st.write(f"Covered call profit = {cov_call_profit:.4f}")
-        st.caption("Both evaluated at expiration; ignores dividends and financing.")
+        col_opt1, col_opt2, col_opt3 = st.columns(3)
 
-    st.markdown("---")
+        with col_opt1:
+            o_ST  = st.number_input("Underlying price at expiration S_T", value=100.0, key="o_ST")
+            o_X   = st.number_input("Strike price X", value=95.0, key="o_X")
+            o_c0  = st.number_input("Call premium c₀", value=4.0, key="o_c0")
+            o_p0  = st.number_input("Put premium p₀", value=3.0, key="o_p0")
 
-    # ---------- PUT–CALL PARITY ----------
-    st.subheader("Put–Call Parity (No Dividends)")
+        with col_opt2:
+            # Payoffs
+            call_payoff = max(0.0, o_ST - o_X)
+            put_payoff  = max(0.0, o_X - o_ST)
+            st.write(f"Call payoff = max(0, S_T − X) = {call_payoff:.4f}")
+            st.write(f"Put payoff = max(0, X − S_T) = {put_payoff:.4f}")
 
-    col_pcp1, col_pcp2 = st.columns(2)
+        with col_opt3:
+            # Profit = payoff − premium
+            call_profit_long  = call_payoff - o_c0
+            put_profit_long   = put_payoff - o_p0
+            call_profit_short = -call_profit_long
+            put_profit_short  = -put_profit_long
 
-    with col_pcp1:
-        pcp_S0 = st.number_input("Spot price S₀ (parity)", value=52.0, key="pcp_S0")
-        pcp_X  = st.number_input("Strike price X", value=50.0, key="pcp_X")
-        pcp_r  = st.number_input("Risk-free rate r", value=0.045, format="%.4f", key="pcp_r")
-        pcp_T  = st.number_input("Time to expiry T (years)", value=0.25, format="%.4f", key="pcp_T")
-        pcp_p0 = st.number_input("Put price p₀", value=3.80, key="pcp_p0")
+            st.write(f"Long call profit = {call_profit_long:.4f}")
+            st.write(f"Short call profit = {call_profit_short:.4f}")
+            st.write(f"Long put profit = {put_profit_long:.4f}")
+            st.write(f"Short put profit = {put_profit_short:.4f}")
+            st.caption("European options, profit at expiration ignoring time value of money.")
 
-    with col_pcp2:
-        # C0 = S0 + p0 − X / (1+r)^T  (discrete compounding)
-        disc_factor = (1 + pcp_r) ** pcp_T
-        pcp_c0_theoretical = pcp_S0 + pcp_p0 - pcp_X / disc_factor
-        st.write(f"Theoretical call price c₀ (from parity) ≈ {pcp_c0_theoretical:.4f}")
-        st.caption("c₀ + X/(1+r)^T = p₀ + S₀   ⇒   c₀ = S₀ + p₀ − X/(1+r)^T")
+        st.markdown("---")
 
-    st.markdown("---")
+        # ---------- BASIC STRATEGIES ----------
+        st.subheader("Option Strategies: Protective Put & Covered Call")
 
-    # ---------- FORWARD ON STOCK VIA PREPAID FORWARD ----------
-    st.subheader("Prepaid Forward & Forward on Stock (Dividends)")
+        col_str1, col_str2 = st.columns(2)
 
-    col_pf1, col_pf2 = st.columns(2)
+        with col_str1:
+            s_S0  = st.number_input("Stock purchase price S₀", value=100.0, key="s_S0")
+            s_ST  = st.number_input("Stock price at expiration S_T (strat)", value=o_ST, key="s_ST")
+            s_X   = st.number_input("Option strike X (strat)", value=o_X, key="s_X")
+            s_c0  = st.number_input("Call premium c₀ (strat)", value=o_c0, key="s_c0")
+            s_p0  = st.number_input("Put premium p₀ (strat)", value=o_p0, key="s_p0")
 
-    with col_pf1:
-        pf_S0 = st.number_input("Spot price S₀ (stock)", value=100.0, key="pf_S0")
-        pf_div_pv = st.number_input("PV of all dividends to T", value=0.0, key="pf_div_pv")
-        pf_r  = st.number_input("Risk-free rate r (annual)", value=0.05, format="%.4f", key="pf_r")
-        pf_T  = st.number_input("Time to maturity T (years)", value=1.0, format="%.4f", key="pf_T")
+        with col_str2:
+            # Protective put: long stock + long put
+            stock_payoff = s_ST
+            put_payoff_strat = max(0.0, s_X - s_ST)
+            prot_put_profit = stock_payoff + put_payoff_strat - s_S0 - s_p0
 
-    with col_pf2:
-        # Prepaid forward: FP0,T = S0 − PV(dividends)
-        FP0T = pf_S0 - pf_div_pv
+            # Covered call: long stock + short call
+            call_payoff_strat = max(0.0, s_ST - s_X)
+            cov_call_profit = stock_payoff - call_payoff_strat - s_S0 + s_c0
 
-        # Forward price: F0,T = FP0,T × (1+r)^T
-        F0T = FP0T * ((1 + pf_r) ** pf_T)
+            st.write(f"Protective put profit = {prot_put_profit:.4f}")
+            st.write(f"Covered call profit = {cov_call_profit:.4f}")
+            st.caption("Both evaluated at expiration; ignores dividends and financing.")
 
-        st.write(f"Prepaid forward price FP₀,T = {FP0T:,.4f}")
-        st.write(f"Forward price F₀,T = {F0T:,.4f}")
-        st.caption("FP₀,T = S₀ − PV(div);  F₀,T = FP₀,T(1+r)^T.")
+        st.markdown("---")
 
-# TAB 5 — CFO CALCULATORS
-# ─────────────────────────────────────────────────────────────────────────────
+        # ---------- PUT–CALL PARITY ----------
+        st.subheader("Put–Call Parity (No Dividends)")
+
+        col_pcp1, col_pcp2 = st.columns(2)
+
+        with col_pcp1:
+            pcp_S0 = st.number_input("Spot price S₀ (parity)", value=52.0, key="pcp_S0")
+            pcp_X  = st.number_input("Strike price X", value=50.0, key="pcp_X")
+            pcp_r  = st.number_input("Risk-free rate r", value=0.045, format="%.4f", key="pcp_r")
+            pcp_T  = st.number_input("Time to expiry T (years)", value=0.25, format="%.4f", key="pcp_T")
+            pcp_p0 = st.number_input("Put price p₀", value=3.80, key="pcp_p0")
+
+        with col_pcp2:
+            # C0 = S0 + p0 − X / (1+r)^T  (discrete compounding)
+            disc_factor = (1 + pcp_r) ** pcp_T
+            pcp_c0_theoretical = pcp_S0 + pcp_p0 - pcp_X / disc_factor
+            st.write(f"Theoretical call price c₀ (from parity) ≈ {pcp_c0_theoretical:.4f}")
+            st.caption("c₀ + X/(1+r)^T = p₀ + S₀   ⇒   c₀ = S₀ + p₀ − X/(1+r)^T")
+
+        st.markdown("---")
+
+        # ---------- FORWARD ON STOCK VIA PREPAID FORWARD ----------
+        st.subheader("Prepaid Forward & Forward on Stock (Dividends)")
+
+        col_pf1, col_pf2 = st.columns(2)
+
+        with col_pf1:
+            pf_S0 = st.number_input("Spot price S₀ (stock)", value=100.0, key="pf_S0")
+            pf_div_pv = st.number_input("PV of all dividends to T", value=0.0, key="pf_div_pv")
+            pf_r  = st.number_input("Risk-free rate r (annual)", value=0.05, format="%.4f", key="pf_r")
+            pf_T  = st.number_input("Time to maturity T (years)", value=1.0, format="%.4f", key="pf_T")
+
+        with col_pf2:
+            # Prepaid forward: FP0,T = S0 − PV(dividends)
+            FP0T = pf_S0 - pf_div_pv
+
+            # Forward price: F0,T = FP0,T  (1+r)^T
+            F0T = FP0T * ((1 + pf_r) ** pf_T)
+
+            st.write(f"Prepaid forward price FP₀,T = {FP0T:,.4f}")
+            st.write(f"Forward price F₀,T = {F0T:,.4f}")
+            st.caption("FP₀,T = S₀ − PV(div);  F₀,T = FP₀,T(1+r)^T.")
+
+    # TAB 5 — CFO CALCULATORS
+    # ─────────────────────────────────────────────────────────────────────────────
 with T_CFO:
     st.markdown(
         f"<h4 style='color:{CF['primary']};font-family:monospace'>💼 CFO FINANCIAL TOOLKIT</h4>",
@@ -1381,7 +1375,7 @@ with T_CFO:
             f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
             "📊 DISCOUNTED CASH FLOW (DCF) VALUATION MODEL</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Projects FCFs and discounts at WACC · terminal value · equity intrinsic value · sensitivity table"
+            "Projects FCFs and discounts at WACC  terminal value  equity intrinsic value  sensitivity table"
             "</div></div>",
             unsafe_allow_html=True
         )
@@ -1474,7 +1468,7 @@ with T_CFO:
                 text=[f"${v:,.0f}M" for v in vals], textposition="auto",
                 textfont=dict(family="Courier New",size=9)))
             fig.update_layout(**PLOT_CFG, height=360,
-                title=dict(text="ðŸ’¼ DCF Cash Flow Breakdown",
+                title=dict(text="Ÿ’ DCF Cash Flow Breakdown",
                            font=dict(family="Courier New",size=13,color=CF["primary"]),x=0))
             fig.update_xaxes(gridcolor="#111",title_text="Period")
             fig.update_yaxes(gridcolor="#111",title_text="PV ($M)")
@@ -1482,7 +1476,7 @@ with T_CFO:
 
             st.markdown(
                 f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;"
-                "margin:10px 0 6px'>ðŸ“Š SENSITIVITY â€” Intrinsic Value vs WACC & Terminal Growth</div>",
+                "margin:10px 0 6px'>Ÿ“Š SENSITIVITY €” Intrinsic Value vs WACC & Terminal Growth</div>",
                 unsafe_allow_html=True
             )
             waccs = [wacc_d-0.02, wacc_d-0.01, wacc_d, wacc_d+0.01, wacc_d+0.02]
@@ -1491,7 +1485,7 @@ with T_CFO:
             for tg in tgrs:
                 row = {}
                 for wc in waccs:
-                    if wc <= tg: row[f"WACC {wc:.1%}"] = "âˆž"
+                    if wc <= tg: row[f"WACC {wc:.1%}"] = "ˆž"
                     else:
                         fcf2 = dcf_fcf; pv2 = 0
                         for yr in range(1,11):
@@ -1509,26 +1503,26 @@ with T_CFO:
             f"<div style='background:{CF['dark']};border:1px solid {CF['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "âš–ï¸ WACC â€” WEIGHTED AVERAGE COST OF CAPITAL</div>"
+            "š– WACC €” WEIGHTED AVERAGE COST OF CAPITAL</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "WACC = (E/V)Ã—Re + (D/V)Ã—RdÃ—(1âˆ’Tc)"
+            "WACC = (E/V)—Re + (D/V)—Rd—(1ˆ’Tc)"
             "</div></div>",
             unsafe_allow_html=True
         )
         w1, w2, w3 = st.columns(3)
         with w1:
-            wacc_e    = st.number_input("ðŸ’¹ Equity ($M)",     value=800.0, step=50.0, key="wacc_e",    format="%.1f")
-            wacc_d_v  = st.number_input("ðŸ¦ Debt ($M)",       value=200.0, step=50.0, key="wacc_d_v",  format="%.1f")
-            wacc_rf   = st.slider("ðŸ›ï¸ Risk-Free Rate (%)",    0.0,10.0, 4.5, 0.1, key="wacc_rf",  format="%.1f")
+            wacc_e    = st.number_input("Ÿ’ Equity ($M)",     value=800.0, step=50.0, key="wacc_e",    format="%.1f")
+            wacc_d_v  = st.number_input("Ÿ Debt ($M)",       value=200.0, step=50.0, key="wacc_d_v",  format="%.1f")
+            wacc_rf   = st.slider("Ÿ› Risk-Free Rate (%)",    0.0,10.0, 4.5, 0.1, key="wacc_rf",  format="%.1f")
         with w2:
-            wacc_beta = st.slider("ðŸ“Š Beta",                  0.1, 3.0, 1.2, 0.05,key="wacc_beta",format="%.2f")
-            wacc_erp  = st.slider("ðŸ“ˆ Equity Risk Premium (%)",3.0,10.0, 5.5, 0.1, key="wacc_erp", format="%.1f")
-            wacc_rd   = st.slider("ðŸ’³ Cost of Debt (%)",      1.0,15.0, 5.0, 0.25,key="wacc_rd",  format="%.2f")
+            wacc_beta = st.slider("Ÿ“Š Beta",                  0.1, 3.0, 1.2, 0.05,key="wacc_beta",format="%.2f")
+            wacc_erp  = st.slider("Ÿ“ˆ Equity Risk Premium (%)",3.0,10.0, 5.5, 0.1, key="wacc_erp", format="%.1f")
+            wacc_rd   = st.slider("Ÿ’ Cost of Debt (%)",      1.0,15.0, 5.0, 0.25,key="wacc_rd",  format="%.2f")
         with w3:
-            wacc_tc   = st.slider("ðŸ›ï¸ Tax Rate (%)",          0.0,40.0,21.0, 0.5, key="wacc_tc",  format="%.1f")
+            wacc_tc   = st.slider("Ÿ› Tax Rate (%)",          0.0,40.0,21.0, 0.5, key="wacc_tc",  format="%.1f")
 
         st.markdown("<div class='cf-btn'>", unsafe_allow_html=True)
-        run_wacc = st.button("âš–ï¸ Calculate WACC", key="run_wacc")
+        run_wacc = st.button("š– Calculate WACC", key="run_wacc")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_wacc:
@@ -1551,7 +1545,7 @@ with T_CFO:
                     unsafe_allow_html=True
                 )
             wbox(wc1,"WACC",          f"{WACC:.2%}",      "Blended rate",      CF["light"])
-            wbox(wc2,"Cost of Equity",f"{Re:.2%}",         "CAPM: Rf+Î²Ã—ERP")
+            wbox(wc2,"Cost of Equity",f"{Re:.2%}",         "CAPM: Rf+β—ERP")
             wbox(wc3,"Cost of Debt",  f"{Rd*(1-Tc):.2%}", "After-tax")
             wbox(wc4,"Equity Weight", f"{E_w:.1%}",        f"${wacc_e:,.0f}M")
             wbox(wc5,"Debt Weight",   f"{D_w:.1%}",        f"${wacc_d_v:,.0f}M")
@@ -1566,16 +1560,16 @@ with T_CFO:
             wacc_arr  = [E_w*(wacc_rf/100 + b*(wacc_erp/100)) + D_w*Rd*(1-Tc) for b in betas_arr]
             fig.add_trace(go.Scatter(
                 x=betas_arr, y=[w*100 for w in wacc_arr],
-                line=dict(color=CF["primary"],width=2.5), name="WACC vs Î²"
+                line=dict(color=CF["primary"],width=2.5), name="WACC vs β"
             ), row=1, col=2)
             curr_wacc = E_w*(wacc_rf/100 + wacc_beta*(wacc_erp/100)) + D_w*Rd*(1-Tc)
             fig.add_trace(go.Scatter(
                 x=[wacc_beta], y=[curr_wacc*100],
                 mode="markers+text",
                 marker=dict(color="#FFD700",size=12,symbol="diamond"),
-                text=[f"Î²={wacc_beta}"], textposition="top center",
+                text=[f"β={wacc_beta}"], textposition="top center",
                 textfont=dict(family="Courier New",color="#FFD700"),
-                name=f"Î²={wacc_beta}"
+                name=f"β={wacc_beta}"
             ), row=1, col=2)
             fig.update_layout(**PLOT_CFG, height=360,
                 legend=dict(font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
@@ -1626,7 +1620,7 @@ with T_QUANT:
         # ── 1. Data Download ─────────────────────────────────
         st.markdown(
             f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-            "font-size:13px;margin:14px 0 6px'>1 · DATA DOWNLOAD</div>",
+            "font-size:13px;margin:14px 0 6px'>1  DATA DOWNLOAD</div>",
             unsafe_allow_html=True
         )
         with st.spinner("Downloading price data from Yahoo Finance..."):
@@ -1668,7 +1662,7 @@ with T_QUANT:
             # ── 3. Covariance & Correlation Heatmaps ─────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>2 · COVARIANCE & CORRELATION STRUCTURE</div>",
+                "font-size:13px;margin:14px 0 6px'>2  COVARIANCE & CORRELATION STRUCTURE</div>",
                 unsafe_allow_html=True
             )
             hm1, hm2 = st.columns(2)
@@ -1711,7 +1705,7 @@ with T_QUANT:
             # ── 4. Individual Asset Risk-Return ──────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>3 · INDIVIDUAL ASSET RISK–RETURN</div>",
+                "font-size:13px;margin:14px 0 6px'>3  INDIVIDUAL ASSET RISK–RETURN</div>",
                 unsafe_allow_html=True
             )
             fig, ax = plt.subplots(figsize=(6, 4))
@@ -1732,7 +1726,7 @@ with T_QUANT:
             # ── 5. Monte Carlo Simulation ────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>4 · MONTE CARLO PORTFOLIOS ({ql_n_mc:,} iterations)</div>",
+                "font-size:13px;margin:14px 0 6px'>4  MONTE CARLO PORTFOLIOS ({ql_n_mc:,} iterations)</div>",
                 unsafe_allow_html=True
             )
             n_assets = len(available_tickers)
@@ -1801,7 +1795,7 @@ with T_QUANT:
             # ── 7. Scatter + Frontier + CAL ──────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>5 · EFFICIENT FRONTIER & OPTIMAL PORTFOLIOS</div>",
+                "font-size:13px;margin:14px 0 6px'>5  EFFICIENT FRONTIER & OPTIMAL PORTFOLIOS</div>",
                 unsafe_allow_html=True
             )
             fig, ax = plt.subplots(figsize=(8, 6))
@@ -1856,7 +1850,7 @@ with T_QUANT:
             # ── 8. Allocation Pie Charts ──────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>6 · OPTIMAL PORTFOLIO ALLOCATIONS</div>",
+                "font-size:13px;margin:14px 0 6px'>6  OPTIMAL PORTFOLIO ALLOCATIONS</div>",
                 unsafe_allow_html=True
             )
             fig, axes = plt.subplots(1, 2, figsize=(10, 4))
@@ -1886,7 +1880,7 @@ with T_QUANT:
             # ── 9. Price + SMA plots ──────────────────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>7 · PRICE WITH SMAs FOR EACH TICKER</div>",
+                "font-size:13px;margin:14px 0 6px'>7  PRICE WITH SMAs FOR EACH TICKER</div>",
                 unsafe_allow_html=True
             )
             ncols_p = 2
@@ -1911,7 +1905,7 @@ with T_QUANT:
             # ── 10. Monte Carlo Performance Paths ────────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>8 · MONTE CARLO PERFORMANCE PATHS (1-year simulation)</div>",
+                "font-size:13px;margin:14px 0 6px'>8  MONTE CARLO PERFORMANCE PATHS (1-year simulation)</div>",
                 unsafe_allow_html=True
             )
             n_days    = 252
@@ -1941,38 +1935,30 @@ with T_QUANT:
             # ── 11. Equity Curves via bt (optional) ──────────
             st.markdown(
                 f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
-                "font-size:13px;margin:14px 0 6px'>9 · BACKTEST EQUITY CURVES</div>",
+                "font-size:13px;margin:14px 0 6px'>9  BACKTEST EQUITY CURVES</div>",
                 unsafe_allow_html=True
             )
-            if not BT_AVAILABLE:
-                st.info(
-                    "📦 `bt` is not installed. Add `bt` to your **requirements.txt** and redeploy "
-                    "to enable backtest equity curves."
+            try:
+                import bt
+                tw_df = pd.DataFrame(
+                    np.tile(tan_w,      (len(prices), 1)), index=prices.index, columns=available_tickers
                 )
-            else:
-                try:
-                    import bt as _bt
-                    tw_df = pd.DataFrame(
-                        np.tile(tan_w,     (len(prices), 1)), index=prices.index, columns=available_tickers
-                    )
-                    mv_df = pd.DataFrame(
-                        np.tile(min_vol_w, (len(prices), 1)), index=prices.index, columns=available_tickers
-                    )
-                    strat_t = _bt.Strategy("Tangency", [_bt.algos.WeighTarget(tw_df), _bt.algos.Rebalance()])
-                    strat_m = _bt.Strategy("Min Vol",  [_bt.algos.WeighTarget(mv_df), _bt.algos.Rebalance()])
-                    bt_res  = _bt.run(_bt.Backtest(strat_t, prices), _bt.Backtest(strat_m, prices))
-
-                    fig, ax = plt.subplots(figsize=(10, 4))
-                    fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#111")
-                    bt_res.prices.plot(ax=ax, linewidth=2)
-                    ax.set_title("Portfolio Equity Curves", color="#E5E7EB", fontsize=10)
-                    ax.set_ylabel("Portfolio Value", color="#888")
-                    ax.set_xlabel("Date", color="#888")
-                    ax.tick_params(colors="#666"); ax.grid(True, alpha=0.12, color="#333")
-                    for spine in ax.spines.values(): spine.set_edgecolor("#333")
-                    ax.legend(fontsize=9, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
-                    plt.tight_layout()
-                    st.pyplot(fig, clear_figure=True)
-                    st.text(bt_res.display())
-                except Exception as e:
-                    st.warning(f"Backtest skipped: {e}")
+                mv_df = pd.DataFrame(
+                    np.tile(min_vol_w, (len(prices), 1)), index=prices.index, columns=available_tickers
+                )
+                strat_t = bt.Strategy("Tangency", [bt.algos.WeighTarget(tw_df), bt.algos.Rebalance()])
+                strat_m = bt.Strategy("Min Vol",   [bt.algos.WeighTarget(mv_df), bt.algos.Rebalance()])
+                bt_res  = bt.run(bt.Backtest(strat_t, prices), bt.Backtest(strat_m, prices))
+ 
+                fig = plt.figure(figsize=(10, 4))
+                fig.patch.set_facecolor("#0D0D0D")
+                bt_res.plot()
+                plt.title("Portfolio Equity Curves", color="#E5E7EB")
+                plt.ylabel("Portfolio Value", color="#888")
+                plt.grid(True, alpha=0.15, color="#333")
+                st.pyplot(fig, clear_figure=True)
+                st.text(bt_res.display())
+            except ImportError:
+                st.info("Install the `bt` library (`pip install bt`) to enable backtest equity curves.")
+            except Exception as e:
+                st.warning(f"Backtest skipped: {e}")
