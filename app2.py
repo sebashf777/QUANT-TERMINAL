@@ -1,3 +1,9 @@
+with T_QUANT:
+    st.markdown(
+        "[🔬 Open full Markowitz Lab](http://localhost:8502)",
+        unsafe_allow_html=False,
+    )
+    # ...rest of your Quant Lab content (non‑Markowitz) ...
 import matplotlib
 matplotlib.use("Agg")
 import streamlit as st
