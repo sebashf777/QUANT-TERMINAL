@@ -400,7 +400,7 @@ with T_MKT:
         )
         st.markdown(
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;padding:12px'>"
-            "<div style='color:#EC4899;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>ðŸ•µï¸ INSIDER ACTIVITY</div>"
+            "<div style='color:#EC4899;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>🕵️ INSIDER ACTIVITY</div>"
             f"<table style='width:100%;border-collapse:collapse;font-family:monospace;font-size:12px'><tbody>{rows}</tbody></table></div>",
             unsafe_allow_html=True
         )
