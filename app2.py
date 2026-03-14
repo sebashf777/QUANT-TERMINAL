@@ -1575,245 +1575,390 @@ with T_CFO:
             fig.update_xaxes(gridcolor="#111",title_text="Beta", row=1, col=2)
             fig.update_yaxes(gridcolor="#111",title_text="WACC (%)", row=1, col=2)
             st.plotly_chart(fig, use_container_width=True)
-
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  TAB 6 â€” QUANT LAB
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ══════════════════════════════════════════════════════════════
+#  TAB 6 – QUANT LAB  (full Markowitz Lab)
+# ══════════════════════════════════════════════════════════════
 with T_QUANT:
     st.markdown(
-        f"<h4 style='color:{QT['primary']};font-family:monospace'>ðŸ”¬ QUANT LAB â€” RISK & PORTFOLIO ANALYTICS</h4>",
+        f"<h4 style='color:{QT['primary']};font-family:monospace'>🔬 QUANT LAB — FULL MARKOWITZ PORTFOLIO ENGINE</h4>",
         unsafe_allow_html=True
     )
-    q1tab, q2tab = st.tabs(["ðŸ“‰ VaR & RISK METRICS", "ðŸ”— MARKOWITZ OPTIMIZER"])
-
-    # â”€â”€ VaR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    with q1tab:
-        st.markdown(
-            f"<div style='background:{QT['dark']};border:1px solid {QT['border']};"
-            "border-radius:8px;padding:14px;margin-bottom:14px'>"
-            f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "ðŸ“‰ VALUE AT RISK (VaR) + CVaR / ES â€” Risk Measurement Suite</div>"
-            "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Parametric Â· Historical Â· Monte Carlo VaR Â· CVaR/ES Â· Sharpe Â· Sortino Â· Calmar"
-            "</div></div>",
-            unsafe_allow_html=True
+ 
+    # ── Inputs ────────────────────────────────────────────────
+    qi1, qi2, qi3, qi4 = st.columns([3, 2, 2, 2])
+    with qi1:
+        tickers_str = st.text_input(
+            "📋 Tickers (comma-separated)",
+            value="AAPL, MSFT, GOOG, AMZN, TSLA, NFLX, PG, NVDA",
+            key="ql_tickers"
         )
-        vq1, vq2, vq3 = st.columns(3)
-        with vq1:
-            var_tk  = st.text_input("ðŸ“ Ticker", value="SPY", key="var_tk").upper().strip()
-            var_per = st.selectbox("ðŸ“… Period", ["1y","2y","3y","5y"], index=1, key="var_per")
-        with vq2:
-            var_port = st.number_input("ðŸ’µ Portfolio ($)", value=1000000.0, step=50000.0, key="var_port", format="%.0f")
-            var_conf = st.select_slider("ðŸŽ¯ Confidence Level", [0.90,0.95,0.99], value=0.95, key="var_conf")
-        with vq3:
-            var_hrz = st.select_slider("ðŸ“† Horizon (days)", [1,5,10,20,30,60], value=1, key="var_hrz")
-            var_rf2 = st.slider("ðŸ›ï¸ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="var_rf2", format="%.1f")
-
+    with qi2:
+        ql_start = st.date_input("📅 Start Date", value=pd.to_datetime("2019-01-01"), key="ql_start")
+        ql_end   = st.date_input("📅 End Date",   value=pd.to_datetime("2025-05-01"), key="ql_end")
+    with qi3:
+        ql_n_mc  = st.number_input("🎲 MC Iterations", min_value=1000, max_value=50000,
+                                    value=10000, step=1000, key="ql_nmc")
+        ql_rf    = st.number_input("🏛️ Risk-Free Rate (annual, dec)",
+                                    min_value=0.0, max_value=0.20, value=0.0437,
+                                    step=0.001, format="%.4f", key="ql_rf")
+    with qi4:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
-        run_var = st.button("ðŸ“‰ Calculate VaR & Risk", key="run_var")
+        run_ql = st.button("🚀 Run Markowitz Engine", key="run_ql", use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-
-        if run_var:
-            with st.spinner(f"Fetching {var_tk} data..."):
-                df_v = fetch_ohlcv(var_tk, var_per)
-            if not df_v.empty and len(df_v) > 30:
-                rets = df_v["Close"].pct_change().dropna()
-                mu_v = float(rets.mean()); sig_v = float(rets.std())
-                z    = norm.ppf(1 - var_conf)
-                var_p  = -(mu_v + z*sig_v)*math.sqrt(var_hrz)*var_port
-                var_h  = -np.percentile(rets,(1-var_conf)*100)*math.sqrt(var_hrz)*var_port
-                np.random.seed(42)
-                mc_r   = np.random.normal(mu_v, sig_v, (10000, var_hrz))
-                mc_pnl = (np.prod(1+mc_r, axis=1)-1)*var_port
-                var_mc = -np.percentile(mc_pnl, (1-var_conf)*100)
-                cutoff = np.percentile(rets, (1-var_conf)*100)
-                cvar   = -rets[rets<=cutoff].mean()*math.sqrt(var_hrz)*var_port
-                ann_r  = float(rets.mean()*252); ann_v = float(rets.std()*math.sqrt(252))
-                sharpe = (ann_r - var_rf2/100)/ann_v if ann_v > 0 else 0
-                neg_r  = rets[rets<0]
-                sortino= (ann_r - var_rf2/100)/(float(neg_r.std())*math.sqrt(252)) if len(neg_r)>0 else 0
-                mdd    = float(((df_v["Close"]/df_v["Close"].cummax())-1).min()*100)
-                calmar = ann_r/abs(mdd/100) if mdd != 0 else 0
-
-                rc1,rc2,rc3,rc4,rc5,rc6 = st.columns(6)
-                def rbox(col, label, val, sub="", color=None):
-                    c = color or QT["primary"]
-                    col.markdown(
-                        f"<div style='background:{QT['mid']};border:1px solid {QT['border']};"
-                        "border-radius:6px;padding:10px;text-align:center;font-family:monospace'>"
-                        f"<div style='color:#555;font-size:10px'>{label}</div>"
-                        f"<div style='color:{c};font-size:18px;font-weight:bold'>{val}</div>"
-                        f"{'<div style=color:#444;font-size:9px>' + sub + '</div>' if sub else ''}"
-                        "</div>",
-                        unsafe_allow_html=True
-                    )
-                rbox(rc1,"Param VaR",  f"${var_p:,.0f}", f"{var_conf:.0%}/{var_hrz}d","#FF4444")
-                rbox(rc2,"Hist VaR",   f"${var_h:,.0f}", "hist sim",                  "#FF4444")
-                rbox(rc3,"MC VaR",     f"${var_mc:,.0f}","10k paths",                 "#FF4444")
-                rbox(rc4,"CVaR/ES",    f"${cvar:,.0f}",  "exp. shortfall",            "#EC4899")
-                rbox(rc5,"Sharpe",     f"{sharpe:.3f}",  "annualized")
-                rbox(rc6,"Sortino",    f"{sortino:.3f}", "downside only")
-
-                rc7,rc8,rc9,rc10 = st.columns(4)
-                rbox(rc7, "Ann Return",   f"{ann_r:.2%}", "", "#00FF41" if ann_r>=0 else "#FF4444")
-                rbox(rc8, "Ann Vol",      f"{ann_v:.2%}")
-                rbox(rc9, "Max Drawdown", f"{mdd:.1f}%", "peak-to-trough", "#FF4444")
-                rbox(rc10,"Calmar",       f"{calmar:.3f}")
-
-                fig = make_subplots(rows=2, cols=1, shared_xaxes=False,
-                                    row_heights=[0.55,0.45], vertical_spacing=0.07)
-                fig.add_trace(go.Scatter(
-                    x=df_v.index, y=df_v["Close"],
-                    line=dict(color=QT["primary"],width=1.5),
-                    name=f"{var_tk} Price"
-                ), row=1, col=1)
-                svc = df_v["Close"].cummax()
-                fig.add_trace(go.Scatter(
-                    x=df_v.index, y=svc,
-                    line=dict(color="#444",width=1, dash="dot"),
-                    name="Rolling High"
-                ), row=1, col=1)
-                fig2_rets = rets.copy()
-                fig.add_trace(go.Histogram(
-                    x=fig2_rets, nbinsx=60,
-                    marker_color=QT["primary"], opacity=0.75,
-                    name="Daily Returns"
-                ), row=2, col=1)
-                thr = np.percentile(fig2_rets,(1-var_conf)*100)
-                fig.add_vline(x=thr, line=dict(color="#FF4444",dash="dash",width=2),
-                              annotation_text=f"VaR cutoff {thr:.2%}", annotation_font_color="#FF8888")
-                fig.update_layout(**PLOT_CFG, height=480,
-                    legend=dict(orientation="h", x=0, y=1.08,
-                                font=dict(family="Courier New",size=10), bgcolor="rgba(0,0,0,0)"))
-                fig.update_xaxes(gridcolor="#111", row=1,col=1); fig.update_yaxes(gridcolor="#111", row=1,col=1)
-                fig.update_xaxes(gridcolor="#111", row=2,col=1, title_text="Daily Returns"); 
-                fig.update_yaxes(gridcolor="#111", row=2,col=1, title_text="Frequency")
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.warning("Not enough data for VaR calculation. Try a different ticker or longer period.")
-
-    # â”€â”€ Markowitz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    with q2tab:
+ 
+    if not run_ql:
+        st.info("Set your parameters above and click **Run Markowitz Engine**.")
+    else:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+ 
+        tickers = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
+ 
+        # ── 1. Data Download ─────────────────────────────────
         st.markdown(
-            f"<div style='background:{QT['dark']};border:1px solid {QT['border']};"
-            "border-radius:8px;padding:14px;margin-bottom:14px'>"
-            f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "ðŸ”— MEAN-VARIANCE PORTFOLIO OPTIMIZER â€” Efficient Frontier</div>"
-            "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Upload tickers, estimate return/cov, compute min variance & max Sharpe portfolios, plot frontier"
-            "</div></div>",
+            f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+            "font-size:13px;margin:14px 0 6px'>1 · DATA DOWNLOAD</div>",
             unsafe_allow_html=True
         )
-
-        mq1, mq2 = st.columns([3,2])
-        with mq1:
-            tickers_str = st.text_input(
-                "ðŸ“‹ Tickers (comma-separated)", 
-                value="SPY, QQQ, IWM, EFA, EEM, TLT",
-                key="m_tks"
+        with st.spinner("Downloading price data from Yahoo Finance..."):
+            raw = yf.download(tickers, start=str(ql_start), end=str(ql_end),
+                              auto_adjust=True, progress=False)
+ 
+        if raw.empty:
+            st.error("No data returned. Check tickers or dates.")
+        else:
+            if isinstance(raw.columns, pd.MultiIndex):
+                field  = "Adj Close" if "Adj Close" in raw.columns.get_level_values(0) else "Close"
+                prices = raw[field][[t for t in tickers if t in raw[field].columns]].dropna(axis=1)
+            else:
+                field  = "Adj Close" if "Adj Close" in raw.columns else "Close"
+                prices = raw[[field]].rename(columns={field: tickers[0]}) if len(tickers)==1 else raw[field]
+ 
+            available_tickers = list(prices.columns)
+            st.markdown(
+                f"<div style='font-family:monospace;font-size:12px;color:#aaa'>"
+                f"Using: <span style='color:{QT['primary']}'>{', '.join(available_tickers)}</span></div>",
+                unsafe_allow_html=True
             )
-            per_m = st.selectbox("ðŸ“… Lookback", ["1y","3y","5y"], index=1, key="m_per")
-        with mq2:
-            rf_m = st.slider("ðŸ›ï¸ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="m_rf", format="%.1f")
-            pts_m= st.slider("ðŸ“ˆ Frontier Points", 20, 200, 80, 10, key="m_pts")
-
-        st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
-        run_mpt = st.button("ðŸ”— Run Markowitz Optimization", key="run_mpt")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        if run_mpt:
-            tks = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
-            if len(tks) < 2:
-                st.warning("Please enter at least two tickers."); 
-            else:
-                with st.spinner("Downloading price history and computing stats..."):
-                    data = {}
-                    for tk in tks:
-                        df = fetch_ohlcv(tk, per_m)
-                        if df.empty or len(df)<60: 
-                            continue
-                        data[tk] = df["Close"]
-                    if len(data) < 2:
-                        st.warning("Not enough valid tickers with history. Try different symbols or a longer period.")
-                    else:
-                        prices = pd.DataFrame(data).dropna()
-                        rets   = prices.pct_change().dropna()
-                        mu     = rets.mean().values*252
-                        cov    = rets.cov().values*252
-                        rf     = rf_m/100
-
-                        w_mv   = min_var_w(mu, cov)
-                        mv_r, mv_v = port_stats(w_mv, mu, cov)
-                        w_sh   = max_sharpe_w(mu, cov, rf)
-                        sh_r, sh_v = port_stats(w_sh, mu, cov)
-                        vols_f, rets_f = calc_frontier(mu, cov, n_pts=pts_m)
-
-                        c1, c2, c3 = st.columns(3)
-                        stat_box(c1, "Min-Var Return", f"{mv_r:.2%}", "#10B981", f"Vol {mv_v:.2%}")
-                        stat_box(c2, "Max-Sharpe Return", f"{sh_r:.2%}", "#F59E0B", f"Vol {sh_v:.2%}")
-                        sh_ratio = (sh_r - rf)/sh_v if sh_v>0 else 0
-                        stat_box(c3, "Sharpe (Max)", f"{sh_ratio:.2f}", "#EC4899", f"Rf {rf_m:.2f}%")
-
-                        fig = go.Figure()
-                        for i, tk in enumerate(tks):
-                            fig.add_trace(go.Scatter(
-                                x=[np.sqrt(cov[i,i])], y=[mu[i]],
-                                mode="markers", name=tk,
-                                marker=dict(size=9,color="#888"),
-                                text=[tk]
-                            ))
-                        fig.add_trace(go.Scatter(
-                            x=vols_f, y=rets_f,
-                            mode="lines", name="Efficient Frontier",
-                            line=dict(color=QT["primary"],width=2.5)
-                        ))
-                        fig.add_trace(go.Scatter(
-                            x=[mv_v], y=[mv_r],
-                            mode="markers", name="Min Variance",
-                            marker=dict(size=11,color="#10B981",symbol="diamond")
-                        ))
-                        fig.add_trace(go.Scatter(
-                            x=[sh_v], y=[sh_r],
-                            mode="markers", name="Max Sharpe",
-                            marker=dict(size=11,color="#F59E0B",symbol="star")
-                        ))
-                        fig.update_layout(**PLOT_CFG, height=420,
-                            title=dict(text="ðŸ”— Efficient Frontier & Key Portfolios",
-                                       font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
-                            legend=dict(orientation="h",x=0,y=1.05,
-                                        font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
-                        fig.update_xaxes(gridcolor="#111",title_text="Volatility (Ïƒ)")
-                        fig.update_yaxes(gridcolor="#111",title_text="Expected Return")
-                        st.plotly_chart(fig, use_container_width=True)
-
-                        wm_df = pd.DataFrame({"Ticker": tks,
-                                              "Min-Var W": w_mv,
-                                              "Max-Sharpe W": w_sh})
-                        wm_df["Min-Var W"]   = wm_df["Min-Var W"].map(lambda x: f"{x:.2%}")
-                        wm_df["Max-Sharpe W"]= wm_df["Max-Sharpe W"].map(lambda x: f"{x:.2%}")
-                        st.markdown("#### Optimal Weights")
-                        st.dataframe(wm_df.set_index("Ticker"), use_container_width=True)
-
-                        rets_p = rets@w_sh
-                        cum_p  = (1+rets_p).cumprod()
-                        cum_b  = (1+rets).cumprod()
-                        fig2   = go.Figure()
-                        for tk in tks:
-                            fig2.add_trace(go.Scatter(
-                                x=cum_b.index, y=cum_b[tk],
-                                mode="lines", name=tk,
-                                line=dict(width=1)
-                            ))
-                        fig2.add_trace(go.Scatter(
-                            x=cum_p.index, y=cum_p,
-                            mode="lines", name="Max Sharpe Portfolio",
-                            line=dict(width=2.3,color=QT["primary"])
-                        ))
-                        fig2.update_layout(**PLOT_CFG, height=420,
-                            title=dict(text="ðŸ“ˆ Growth of $1 â€” Max Sharpe vs Constituents",
-                                       font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
-                            legend=dict(orientation="h",x=0,y=1.05,
-                                        font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
-                        fig2.update_xaxes(gridcolor="#111",title_text="Date")
-                        fig2.update_yaxes(gridcolor="#111",title_text="Growth of 1")
-                        st.plotly_chart(fig2, use_container_width=True)
+ 
+            # ── 2. Returns & stats ───────────────────────────
+            returns     = prices.pct_change().dropna()
+            mean_annual = returns.mean() * 252
+            cov_annual  = returns.cov() * 252
+            std_annual  = np.sqrt(np.diag(cov_annual.values))
+            corr_matrix = returns.corr()
+ 
+            col_l, col_r = st.columns(2)
+            with col_l:
+                st.markdown("<div style='font-family:monospace;font-size:11px;color:#888'>Annualized Expected Returns</div>", unsafe_allow_html=True)
+                st.dataframe(mean_annual.to_frame("E[R]").style.format("{:.2%}"), use_container_width=True)
+            with col_r:
+                st.markdown("<div style='font-family:monospace;font-size:11px;color:#888'>Annualized Volatility</div>", unsafe_allow_html=True)
+                st.dataframe(pd.Series(std_annual, index=available_tickers, name="σ").to_frame().style.format("{:.2%}"), use_container_width=True)
+ 
+            # ── 3. Covariance & Correlation Heatmaps ─────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>2 · COVARIANCE & CORRELATION STRUCTURE</div>",
+                unsafe_allow_html=True
+            )
+            hm1, hm2 = st.columns(2)
+ 
+            with hm1:
+                max_abs_cov = np.max(np.abs(cov_annual.values))
+                fig, ax = plt.subplots(figsize=(5, 4))
+                fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
+                im = ax.imshow(cov_annual, cmap="RdBu", vmin=-max_abs_cov, vmax=max_abs_cov, aspect="auto")
+                plt.colorbar(im, ax=ax, label="Covariance")
+                ax.set_xticks(range(len(available_tickers))); ax.set_yticks(range(len(available_tickers)))
+                ax.set_xticklabels(available_tickers, rotation=45, ha="right", color="#aaa", fontsize=7)
+                ax.set_yticklabels(available_tickers, color="#aaa", fontsize=7)
+                ax.set_title("Annualized Covariance Matrix", color="#E5E7EB", fontsize=10)
+                for i in range(len(available_tickers)):
+                    for j in range(len(available_tickers)):
+                        val = cov_annual.iloc[i, j]
+                        color = "white" if abs(val) < 0.5 * max_abs_cov else "black"
+                        ax.text(j, i, f"{val:.2e}", ha="center", va="center", color=color, fontsize=6)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+ 
+            with hm2:
+                fig, ax = plt.subplots(figsize=(5, 4))
+                fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
+                im = ax.imshow(corr_matrix, cmap="RdBu", vmin=-1, vmax=1, aspect="auto")
+                plt.colorbar(im, ax=ax, label="Correlation")
+                ax.set_xticks(range(len(available_tickers))); ax.set_yticks(range(len(available_tickers)))
+                ax.set_xticklabels(available_tickers, rotation=45, ha="right", color="#aaa", fontsize=7)
+                ax.set_yticklabels(available_tickers, color="#aaa", fontsize=7)
+                ax.set_title("Asset Correlation Matrix", color="#E5E7EB", fontsize=10)
+                for i in range(len(available_tickers)):
+                    for j in range(len(available_tickers)):
+                        val = corr_matrix.iloc[i, j]
+                        color = "white" if abs(val) > 0.5 else "black"
+                        ax.text(j, i, f"{val:.2f}", ha="center", va="center", color=color, fontsize=7)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+ 
+            # ── 4. Individual Asset Risk-Return ──────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>3 · INDIVIDUAL ASSET RISK–RETURN</div>",
+                unsafe_allow_html=True
+            )
+            fig, ax = plt.subplots(figsize=(6, 4))
+            fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
+            ax.scatter(std_annual, mean_annual, s=150, color=QT["primary"],
+                       edgecolor="#fff", linewidth=1.5, alpha=0.9)
+            for i, ticker in enumerate(available_tickers):
+                ax.annotate(ticker, (std_annual[i], mean_annual[i]),
+                            xytext=(6, 6), textcoords="offset points",
+                            fontweight="bold", fontsize=8, color="#E5E7EB")
+            ax.set_title("Individual Asset Risk–Return (Annualized)", color="#E5E7EB", fontsize=10)
+            ax.set_xlabel("Volatility (σ)", color="#888"); ax.set_ylabel("Expected Return", color="#888")
+            ax.tick_params(colors="#666"); ax.grid(True, alpha=0.15, color="#333")
+            for spine in ax.spines.values(): spine.set_edgecolor("#333")
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 5. Monte Carlo Simulation ────────────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>4 · MONTE CARLO PORTFOLIOS ({ql_n_mc:,} iterations)</div>",
+                unsafe_allow_html=True
+            )
+            n_assets = len(available_tickers)
+            years    = (pd.to_datetime(ql_end) - pd.to_datetime(ql_start)).days / 365.25
+            results  = np.zeros((4 + n_assets, ql_n_mc))
+ 
+            with st.spinner(f"Simulating {ql_n_mc:,} random portfolios..."):
+                for i in range(ql_n_mc):
+                    w = np.random.dirichlet(np.ones(n_assets))
+                    pr = float(np.dot(w, mean_annual))
+                    pv = float(np.sqrt(w @ cov_annual.values @ w))
+                    results[0, i] = pr
+                    results[1, i] = pv
+                    results[2, i] = (pr - ql_rf) / pv if pv > 0 else 0.0
+                    results[3, i] = (1 + pr) ** (1 / years) - 1
+                    results[4:, i] = w
+ 
+            # ── 6. Efficient Frontier (optimizer) ────────────
+            def _pstats(w, mu, cov):
+                return float(np.dot(w, mu)), float(np.sqrt(w @ cov.values @ w))
+ 
+            def _min_vol(mu, cov):
+                n   = len(mu)
+                res = minimize(lambda w: _pstats(w, mu, cov)[1], np.ones(n)/n,
+                               bounds=[(0,1)]*n,
+                               constraints={"type":"eq","fun":lambda x: np.sum(x)-1},
+                               method="SLSQP", options={"ftol":1e-9})
+                return res.x if res.success else np.ones(n)/n
+ 
+            def _max_sharpe(mu, cov, rf):
+                n   = len(mu)
+                res = minimize(lambda w: -((_pstats(w,mu,cov)[0]-rf)/_pstats(w,mu,cov)[1]),
+                               np.ones(n)/n,
+                               bounds=[(0,1)]*n,
+                               constraints={"type":"eq","fun":lambda x: np.sum(x)-1},
+                               method="SLSQP", options={"ftol":1e-9})
+                return res.x if res.success else np.ones(n)/n
+ 
+            with st.spinner("Optimizing frontier..."):
+                min_vol_w   = _min_vol(mean_annual, cov_annual)
+                mv_ret, mv_vol = _pstats(min_vol_w, mean_annual, cov_annual)
+                tan_w       = _max_sharpe(mean_annual, cov_annual, ql_rf)
+                tan_ret, tan_vol = _pstats(tan_w, mean_annual, cov_annual)
+ 
+                target_rets = np.linspace(mv_ret, mean_annual.max() * 0.95, 120)
+                f_vols, f_rets = [], []
+                x0 = min_vol_w.copy()
+                for tgt in target_rets:
+                    try:
+                        res = minimize(
+                            lambda w: _pstats(w, mean_annual, cov_annual)[1], x0,
+                            bounds=[(0,1)]*n_assets,
+                            constraints=[
+                                {"type":"eq","fun":lambda x: np.sum(x)-1},
+                                {"type":"eq","fun":lambda x,t=tgt: _pstats(x,mean_annual,cov_annual)[0]-t}
+                            ],
+                            method="SLSQP", options={"ftol":1e-9}
+                        )
+                        if res.success and res.fun > 0:
+                            r, v = _pstats(res.x, mean_annual, cov_annual)
+                            if abs(r - tgt) < 1e-5:
+                                f_vols.append(v); f_rets.append(r); x0 = res.x.copy()
+                    except: pass
+                f_vols = np.array(f_vols); f_rets = np.array(f_rets)
+ 
+            # ── 7. Scatter + Frontier + CAL ──────────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>5 · EFFICIENT FRONTIER & OPTIMAL PORTFOLIOS</div>",
+                unsafe_allow_html=True
+            )
+            fig, ax = plt.subplots(figsize=(8, 6))
+            fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#0D0D0D")
+ 
+            sc = ax.scatter(results[1], results[0], c=results[2], cmap="plasma",
+                            alpha=0.35, s=12, label="Random Portfolios")
+            cbar = plt.colorbar(sc, ax=ax); cbar.set_label("Sharpe Ratio", color="#aaa")
+            cbar.ax.yaxis.set_tick_params(color="#aaa"); plt.setp(cbar.ax.yaxis.get_ticklabels(), color="#aaa")
+ 
+            if len(f_vols) > 0:
+                order = np.argsort(f_vols)
+                ax.plot(f_vols[order], f_rets[order], color="#06B6D4", linewidth=2.5, label="Efficient Frontier")
+ 
+            ax.scatter(tan_vol, tan_ret, marker="*", s=400, color="#FFD700", edgecolor="#fff", zorder=5,
+                       label=f"Tangency  R={tan_ret:.1%}  σ={tan_vol:.1%}")
+            ax.scatter(mv_vol, mv_ret, marker="*", s=400, color="#10B981", edgecolor="#fff", zorder=5,
+                       label=f"Min Vol   R={mv_ret:.1%}  σ={mv_vol:.1%}")
+ 
+            cal_x = np.linspace(0, (f_vols.max() if len(f_vols)>0 else tan_vol*2)*1.1, 100)
+            cal_y = ql_rf + (tan_ret - ql_rf) / tan_vol * cal_x
+            ax.plot(cal_x, cal_y, color="#A855F7", linewidth=2, linestyle="--", label="Capital Allocation Line")
+ 
+            ax.set_title("Efficient Frontier Analysis", color="#E5E7EB", fontsize=11)
+            ax.set_xlabel("Annualized Volatility", color="#888")
+            ax.set_ylabel("Annualized Return", color="#888")
+            ax.tick_params(colors="#666"); ax.grid(True, alpha=0.12, color="#333")
+            for spine in ax.spines.values(): spine.set_edgecolor("#333")
+            ax.legend(fontsize=8, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── Stats cards ───────────────────────────────────
+            cs1, cs2, cs3, cs4, cs5 = st.columns(5)
+            def _sbox(col, label, val, color=None):
+                c = color or QT["primary"]
+                col.markdown(
+                    f"<div style='background:{QT['mid']};border:1px solid {QT['border']};"
+                    "border-radius:6px;padding:10px;text-align:center;font-family:monospace'>"
+                    f"<div style='color:#555;font-size:10px'>{label}</div>"
+                    f"<div style='color:{c};font-size:16px;font-weight:bold'>{val}</div>"
+                    "</div>",
+                    unsafe_allow_html=True
+                )
+            tan_sharpe = (tan_ret - ql_rf) / tan_vol if tan_vol > 0 else 0
+            _sbox(cs1, "Tangency Return",  f"{tan_ret:.2%}", "#FFD700")
+            _sbox(cs2, "Tangency Vol",     f"{tan_vol:.2%}", "#FFD700")
+            _sbox(cs3, "Tangency Sharpe",  f"{tan_sharpe:.3f}", QT["primary"])
+            _sbox(cs4, "Min Vol Return",   f"{mv_ret:.2%}", "#10B981")
+            _sbox(cs5, "Min Vol σ",        f"{mv_vol:.2%}", "#10B981")
+ 
+            # ── 8. Allocation Pie Charts ──────────────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>6 · OPTIMAL PORTFOLIO ALLOCATIONS</div>",
+                unsafe_allow_html=True
+            )
+            fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+            fig.patch.set_facecolor("#0D0D0D")
+            for ax, (name, w) in zip(axes, [("Tangency", tan_w), ("Min Vol", min_vol_w)]):
+                ax.set_facecolor("#0D0D0D")
+                mask = w > 0.01
+                colors_pie = plt.cm.plasma(np.linspace(0.2, 0.85, mask.sum()))
+                wedges, texts, autotexts = ax.pie(
+                    w[mask], labels=np.array(available_tickers)[mask],
+                    autopct="%1.1f%%", startangle=90, colors=colors_pie
+                )
+                for t in texts:    t.set_color("#ccc"); t.set_fontsize(8)
+                for at in autotexts: at.set_color("#111"); at.set_fontsize(8)
+                ax.set_title(name, color="#E5E7EB", fontsize=10)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── Weights table ─────────────────────────────────
+            wm_df = pd.DataFrame({
+                "Ticker":         available_tickers,
+                "Tangency W":     [f"{x:.2%}" for x in tan_w],
+                "Min Vol W":      [f"{x:.2%}" for x in min_vol_w],
+            })
+            st.dataframe(wm_df.set_index("Ticker"), use_container_width=True)
+ 
+            # ── 9. Price + SMA plots ──────────────────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>7 · PRICE WITH SMAs FOR EACH TICKER</div>",
+                unsafe_allow_html=True
+            )
+            ncols_p = 2
+            nrows_p = math.ceil(len(available_tickers) / ncols_p)
+            fig, axes = plt.subplots(nrows_p, ncols_p, figsize=(12, nrows_p * 3))
+            fig.patch.set_facecolor("#0D0D0D")
+            axes = axes.flatten() if hasattr(axes, "flatten") else [axes]
+            for i, ticker in enumerate(available_tickers):
+                ax = axes[i]; ax.set_facecolor("#111")
+                ax.plot(prices[ticker], color=QT["primary"],   linewidth=1,   label="Price")
+                ax.plot(prices[ticker].rolling(35).mean(),  color="#F59E0B", linewidth=1.2, linestyle="--", label="SMA35")
+                ax.plot(prices[ticker].rolling(150).mean(), color="#10B981", linewidth=1.2, linestyle="-.", label="SMA150")
+                ax.set_title(f"{ticker}", color="#E5E7EB", fontsize=9)
+                ax.tick_params(colors="#555", labelsize=7)
+                ax.grid(True, alpha=0.1, color="#333")
+                for spine in ax.spines.values(): spine.set_edgecolor("#222")
+                ax.legend(fontsize=6, facecolor="#111", labelcolor="#aaa", edgecolor="#222")
+            for j in range(i+1, len(axes)): axes[j].axis("off")
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 10. Monte Carlo Performance Paths ────────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>8 · MONTE CARLO PERFORMANCE PATHS (1-year simulation)</div>",
+                unsafe_allow_html=True
+            )
+            n_days    = 252
+            n_samples = 100
+            idx       = np.random.choice(ql_n_mc, n_samples, replace=False)
+            s_weights = results[4:, idx].T
+            daily_r   = np.random.multivariate_normal(
+                mean_annual.values / 252, cov_annual.values / 252, size=n_days
+            )
+            pvals = np.ones((n_samples, n_days + 1))
+            for day in range(n_days):
+                pvals[:, day+1] = pvals[:, day] * (1 + s_weights @ daily_r[day])
+ 
+            fig, ax = plt.subplots(figsize=(10, 4))
+            fig.patch.set_facecolor("#0D0D0D"); ax.set_facecolor("#111")
+            for i in range(n_samples):
+                ax.plot(pvals[i], alpha=0.12, color=QT["primary"], linewidth=0.7)
+            ax.plot(np.median(pvals, axis=0), color="#FFD700", linewidth=2, label="Median path")
+            ax.set_title("Monte Carlo Portfolio Performance Paths (100 samples)", color="#E5E7EB", fontsize=10)
+            ax.set_xlabel("Trading Days", color="#888"); ax.set_ylabel("Portfolio Value", color="#888")
+            ax.tick_params(colors="#666"); ax.grid(True, alpha=0.1, color="#333")
+            for spine in ax.spines.values(): spine.set_edgecolor("#333")
+            ax.legend(fontsize=8, facecolor="#111", labelcolor="#ccc", edgecolor="#333")
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+ 
+            # ── 11. Equity Curves via bt (optional) ──────────
+            st.markdown(
+                f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;"
+                "font-size:13px;margin:14px 0 6px'>9 · BACKTEST EQUITY CURVES</div>",
+                unsafe_allow_html=True
+            )
+            try:
+                import bt
+                tw_df = pd.DataFrame(
+                    np.tile(tan_w,      (len(prices), 1)), index=prices.index, columns=available_tickers
+                )
+                mv_df = pd.DataFrame(
+                    np.tile(min_vol_w, (len(prices), 1)), index=prices.index, columns=available_tickers
+                )
+                strat_t = bt.Strategy("Tangency", [bt.algos.WeighTarget(tw_df), bt.algos.Rebalance()])
+                strat_m = bt.Strategy("Min Vol",   [bt.algos.WeighTarget(mv_df), bt.algos.Rebalance()])
+                bt_res  = bt.run(bt.Backtest(strat_t, prices), bt.Backtest(strat_m, prices))
+ 
+                fig = plt.figure(figsize=(10, 4))
+                fig.patch.set_facecolor("#0D0D0D")
+                bt_res.plot()
+                plt.title("Portfolio Equity Curves", color="#E5E7EB")
+                plt.ylabel("Portfolio Value", color="#888")
+                plt.grid(True, alpha=0.15, color="#333")
+                st.pyplot(fig, clear_figure=True)
+                st.text(bt_res.display())
+            except ImportError:
+                st.info("Install the `bt` library (`pip install bt`) to enable backtest equity curves.")
+            except Exception as e:
+                st.warning(f"Backtest skipped: {e}")
+ 
