@@ -12,13 +12,13 @@ import yfinance as yf
 from zoneinfo import ZoneInfo
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="⚡ Quant Terminal", layout="wide", page_icon="⚡", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="âš¡ Quant Terminal", layout="wide", page_icon="âš¡", initial_sidebar_state="collapsed")
 NY  = ZoneInfo("America/New_York")
 NOW = datetime.datetime.now(NY)
 
-BS  = dict(primary="#A855F7",light="#D8B4FE",dark="#1E0A2E",mid="#2D1B4E",border="#7C3AED",glow="rgba(168,85,247,0.15)",emoji="🔮",label="BLACK-SCHOLES")
-MC  = dict(primary="#06B6D4",light="#A5F3FC",dark="#021B2E",mid="#0C2D3E",border="#0891B2",glow="rgba(6,182,212,0.15)",emoji="🎲",label="MONTE CARLO")
-BTH = dict(primary="#10B981",light="#A7F3D0",dark="#022C22",mid="#064E3B",border="#059669",glow="rgba(16,185,129,0.15)",emoji="🌳",label="BINOMIAL TREE")
+BS  = dict(primary="#A855F7",light="#D8B4FE",dark="#1E0A2E",mid="#2D1B4E",border="#7C3AED",glow="rgba(168,85,247,0.15)",emoji="ðŸ”®",label="BLACK-SCHOLES")
+MC  = dict(primary="#06B6D4",light="#A5F3FC",dark="#021B2E",mid="#0C2D3E",border="#0891B2",glow="rgba(6,182,212,0.15)",emoji="ðŸŽ²",label="MONTE CARLO")
+BTH = dict(primary="#10B981",light="#A7F3D0",dark="#022C22",mid="#064E3B",border="#059669",glow="rgba(16,185,129,0.15)",emoji="ðŸŒ³",label="BINOMIAL TREE")
 CF  = dict(primary="#F59E0B",light="#FDE68A",dark="#1C1400",mid="#292000",border="#D97706",glow="rgba(245,158,11,0.15)")
 QT  = dict(primary="#EC4899",light="#FBCFE8",dark="#1F0010",mid="#3B0023",border="#DB2777",glow="rgba(236,72,153,0.15)")
 
@@ -50,13 +50,13 @@ input,select{background:#0D0D0D!important;color:#E5E7EB!important;
 h1,h2,h3{font-family:monospace!important;color:#E5E7EB!important;}
 </style>""", unsafe_allow_html=True)
 
-# ── HELPERS ──────────────────────────────────────────────────
+# â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def fp(p):
     if p > 10000: return f"{p:,.0f}"
     elif p > 100: return f"{p:,.2f}"
     elif p > 1:   return f"{p:.4f}"
     elif p > 0:   return f"{p:.6f}"
-    return "—"
+    return "â€”"
 
 def fc(c):
     a = abs(c)
@@ -87,7 +87,7 @@ def themed_card(label, value, theme, hint=""):
         f"{hint_html}</div>"
     )
 
-# ── DATA ──────────────────────────────────────────────────────
+# â”€â”€ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @st.cache_data(ttl=300)
 def batch_quotes(tickers_tuple):
     tickers = list(tickers_tuple)
@@ -137,7 +137,7 @@ def get_info(ticker):
     try: return yf.Ticker(ticker).info or {}
     except: return {}
 
-# ── OPTIONS MATH ──────────────────────────────────────────────
+# â”€â”€ OPTIONS MATH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def bs_params(St, K, r, sigma, T, q=0):
     d1 = (math.log(St/K) + (r - q + 0.5*sigma**2)*T) / (sigma*math.sqrt(T))
     return d1, d1 - sigma*math.sqrt(T)
@@ -188,7 +188,7 @@ def run_bt(St, K, sigma, T, r, N):
     d1, d2 = bs_params(St, K, r, sigma, T)
     return dict(d1=d1, d2=d2, dc=dcp[0], sc=cp[0], dp=dpp[0], sp=pp[0])
 
-# ── PORTFOLIO MATH ────────────────────────────────────────────
+# â”€â”€ PORTFOLIO MATH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def port_stats(w, mu, cov):
     ret = float(np.dot(w, mu))
     vol = float(np.sqrt(w @ cov @ w))
@@ -236,9 +236,9 @@ def calc_frontier(mu, cov, n_pts=60):
         except: pass
     return np.array(vols), np.array(rets)
 
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 #  HEADER
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 st.markdown(
     "<div style='background:linear-gradient(90deg,#0A0010,#001020,#001A0E);"
     "padding:14px 24px;border-bottom:1px solid #222;"
@@ -247,32 +247,32 @@ st.markdown(
     "<span style='font-size:24px;font-weight:bold;font-family:monospace;"
     "background:linear-gradient(90deg,#A855F7,#06B6D4,#10B981,#F59E0B);"
     "-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px'>"
-    "⚡ QUANT TERMINAL"
+    "âš¡ QUANT TERMINAL"
     "</span>"
     "<span style='color:#333;font-family:monospace;font-size:11px;margin-left:12px'>"
-    "Market Intelligence · Options · Quant · CFO Suite"
+    "Market Intelligence Â· Options Â· Quant Â· CFO Suite"
     "</span>"
     "</div>"
     f"<div style='font-family:monospace;font-size:11px;color:#444'>"
     f"{NOW.strftime('%A %b %d, %Y  |  %I:%M %p ET')} &nbsp;|&nbsp;"
-    "<span style='color:#10B981'>● LIVE</span>"
+    "<span style='color:#10B981'>â— LIVE</span>"
     "</div></div>",
     unsafe_allow_html=True
 )
 
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 #  MAIN TABS
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 T_MKT, T_SIG, T_CHART, T_CALC, T_CFO, T_QUANT = st.tabs([
-    "🌍 MARKET OVERVIEW", "📡 STOCK SIGNALS", "📊 CHART ANALYZER",
-    "📐 FINANCE CALCULATOR", "💼 CFO CALCULATORS", "🔬 QUANT LAB"
+    "ðŸŒ MARKET OVERVIEW", "ðŸ“¡ STOCK SIGNALS", "ðŸ“Š CHART ANALYZER",
+    "ðŸ“ FINANCE CALCULATOR", "ðŸ’¼ CFO CALCULATORS", "ðŸ”¬ QUANT LAB"
 ])
 
-# ════════════════════════════════════════════════════════════
-#  TAB 1 — MARKET OVERVIEW
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 1 â€” MARKET OVERVIEW
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_MKT:
-    if st.button("🔄 Refresh", key="ref_mkt"): st.cache_data.clear()
+    if st.button("ðŸ”„ Refresh", key="ref_mkt"): st.cache_data.clear()
     INDICES = {
         "S&P 500":"^GSPC","NASDAQ":"^IXIC","Dow Jones":"^DJI","Russell 2K":"^RUT",
         "VIX":"^VIX","10Y Yield":"^TNX","Gold":"GC=F","WTI Oil":"CL=F",
@@ -285,7 +285,7 @@ with T_MKT:
     for name, tk in INDICES.items():
         d = q.get(tk, dict(price=0, chg=0, pct=0))
         cc = "#00FF41" if d["chg"] >= 0 else "#FF4444"
-        sg = "▲" if d["chg"] >= 0 else "▼"
+        sg = "â–²" if d["chg"] >= 0 else "â–¼"
         bar_html += (
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:6px;"
             "padding:7px 12px;font-family:monospace;min-width:110px'>"
@@ -303,7 +303,7 @@ with T_MKT:
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;"
             "padding:14px;margin-bottom:10px'>"
             "<div style='color:#A855F7;font-family:monospace;font-weight:bold;"
-            "font-size:12px;margin-bottom:10px'>📊 MARKET BREADTH</div>"
+            "font-size:12px;margin-bottom:10px'>ðŸ“Š MARKET BREADTH</div>"
             "<div style='display:flex;gap:20px;flex-wrap:wrap'>"
             "<div><div style='color:#555;font-size:10px;font-family:monospace'>ADVANCING</div>"
             f"<div style='color:#00FF41;font-size:18px;font-weight:bold;font-family:monospace'>{advancing:,}</div></div>"
@@ -347,8 +347,8 @@ with T_MKT:
                 f"<td style='color:#555;padding:4px 8px;font-size:10px'>CHG%</td>"
                 f"</tr></thead><tbody>{rows}</tbody></table></div>"
             )
-        with g2a: st.markdown(sig_tbl("TOP GAINERS", GAINERS, "#00FF41", "🚀"), unsafe_allow_html=True)
-        with g2b: st.markdown(sig_tbl("TOP LOSERS",  LOSERS,  "#FF4444", "📉"), unsafe_allow_html=True)
+        with g2a: st.markdown(sig_tbl("TOP GAINERS", GAINERS, "#00FF41", "ðŸš€"), unsafe_allow_html=True)
+        with g2b: st.markdown(sig_tbl("TOP LOSERS",  LOSERS,  "#FF4444", "ðŸ“‰"), unsafe_allow_html=True)
 
     with col2:
         FUTURES = [("Crude Oil","99.31","+3.74%","#00FF41"),("Natural Gas","3.13","-3.12%","#FF4444"),
@@ -362,7 +362,7 @@ with T_MKT:
         )
         st.markdown(
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;padding:12px;margin-bottom:10px'>"
-            "<div style='color:#F59E0B;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>⚡ FUTURES</div>"
+            "<div style='color:#F59E0B;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>âš¡ FUTURES</div>"
             f"<table style='width:100%;border-collapse:collapse;font-family:monospace;font-size:12px'><tbody>{rows}</tbody></table></div>",
             unsafe_allow_html=True
         )
@@ -379,7 +379,7 @@ with T_MKT:
         )
         st.markdown(
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;padding:12px;margin-bottom:10px'>"
-            "<div style='color:#06B6D4;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>📅 ECONOMIC CALENDAR</div>"
+            "<div style='color:#06B6D4;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>ðŸ“… ECONOMIC CALENDAR</div>"
             "<table style='width:100%;border-collapse:collapse;font-family:monospace'>"
             "<thead><tr>"
             "<td style='color:#555;padding:4px 8px;font-size:10px'>EVENT</td>"
@@ -398,22 +398,22 @@ with T_MKT:
         )
         st.markdown(
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;padding:12px'>"
-            "<div style='color:#EC4899;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>🕵️ INSIDER ACTIVITY</div>"
+            "<div style='color:#EC4899;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>ðŸ•µï¸ INSIDER ACTIVITY</div>"
             f"<table style='width:100%;border-collapse:collapse;font-family:monospace;font-size:12px'><tbody>{rows}</tbody></table></div>",
             unsafe_allow_html=True
         )
 
-# ════════════════════════════════════════════════════════════
-#  TAB 2 — STOCK SIGNALS
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 2 â€” STOCK SIGNALS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_SIG:
-    st.markdown("<h4 style='color:#A855F7;font-family:monospace;margin-bottom:10px'>📡 LIVE STOCK SIGNALS</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#A855F7;font-family:monospace;margin-bottom:10px'>ðŸ“¡ LIVE STOCK SIGNALS</h4>", unsafe_allow_html=True)
     sc1, sc2, sc3 = st.columns([2, 2, 8])
     with sc1: screen_tk = st.text_input("Ticker", value="AAPL", key="sc_tk").upper().strip()
     with sc2: screen_per = st.selectbox("Period", ["1mo","3mo","6mo","1y"], index=2, key="sc_per")
     with sc3:
         st.markdown("<br>", unsafe_allow_html=True)
-        run_screen = st.button("🔍 Analyze Stock", key="run_screen")
+        run_screen = st.button("ðŸ” Analyze Stock", key="run_screen")
 
     if (run_screen or screen_tk) and screen_tk:
         with st.spinner(f"Analyzing {screen_tk}..."):
@@ -440,29 +440,29 @@ with T_SIG:
             price = qd["price"] if qd["price"] > 0 else float(c_s.iloc[-1])
 
             signals = []
-            signals.append(("▲ Above SMA20","#00FF41") if price > sma20 else ("▼ Below SMA20","#FF4444"))
-            signals.append(("▲ Above SMA50","#00FF41") if price > sma50 else ("▼ Below SMA50","#FF4444"))
-            signals.append(("📈 MACD Bullish","#00FF41") if macd_l > sig_l else ("📉 MACD Bearish","#FF4444"))
-            if rsi_val > 70:   signals.append(("🔴 RSI Overbought","#FF4444"))
-            elif rsi_val < 30: signals.append(("🟢 RSI Oversold","#00FF41"))
-            else:              signals.append((f"🟡 RSI Neutral {rsi_val:.1f}","#F59E0B"))
-            if price > bb_up:   signals.append(("📊 Above BB Upper","#FF4444"))
-            elif price < bb_lo: signals.append(("📊 Below BB Lower","#00FF41"))
-            else:               signals.append(("📊 Inside BB","#06B6D4"))
+            signals.append(("â–² Above SMA20","#00FF41") if price > sma20 else ("â–¼ Below SMA20","#FF4444"))
+            signals.append(("â–² Above SMA50","#00FF41") if price > sma50 else ("â–¼ Below SMA50","#FF4444"))
+            signals.append(("ðŸ“ˆ MACD Bullish","#00FF41") if macd_l > sig_l else ("ðŸ“‰ MACD Bearish","#FF4444"))
+            if rsi_val > 70:   signals.append(("ðŸ”´ RSI Overbought","#FF4444"))
+            elif rsi_val < 30: signals.append(("ðŸŸ¢ RSI Oversold","#00FF41"))
+            else:              signals.append((f"ðŸŸ¡ RSI Neutral {rsi_val:.1f}","#F59E0B"))
+            if price > bb_up:   signals.append(("ðŸ“Š Above BB Upper","#FF4444"))
+            elif price < bb_lo: signals.append(("ðŸ“Š Below BB Lower","#00FF41"))
+            else:               signals.append(("ðŸ“Š Inside BB","#06B6D4"))
 
             bull = sum(1 for _, c2 in signals if "#00FF41" in c2)
             bear = sum(1 for _, c2 in signals if "#FF4444" in c2)
             sc_col = "#00FF41" if bull > bear else ("#FF4444" if bear > bull else "#F59E0B")
-            sc_lbl = "BULLISH 🐂" if bull > bear else ("BEARISH 🐻" if bear > bull else "NEUTRAL ⚖️")
+            sc_lbl = "BULLISH ðŸ‚" if bull > bear else ("BEARISH ðŸ»" if bear > bull else "NEUTRAL âš–ï¸")
             chg_c  = "#00FF41" if qd["chg"] >= 0 else "#FF4444"
-            chg_sg = "▲" if qd["chg"] >= 0 else "▼"
+            chg_sg = "â–²" if qd["chg"] >= 0 else "â–¼"
             rsi_c  = "#FF4444" if rsi_val > 70 else ("#00FF41" if rsi_val < 30 else "#F59E0B")
 
             sa, sb, sc2x, sd = st.columns(4)
             stat_box(sa, "PRICE",    fp(price),                                    "#F59E0B")
             stat_box(sb, "CHANGE",   f"{chg_sg}{fc(qd['chg'])} ({qd['pct']:+.2f}%)", chg_c)
             stat_box(sc2x, "RSI (14)", f"{rsi_val:.1f}",                              rsi_c)
-            stat_box(sd, "SIGNAL",   sc_lbl,                                        sc_col, f"{bull} bull · {bear} bear")
+            stat_box(sd, "SIGNAL",   sc_lbl,                                        sc_col, f"{bull} bull Â· {bear} bear")
 
             sig_html = "<div style='display:flex;flex-wrap:wrap;gap:8px;margin:12px 0'>"
             for s, c2 in signals:
@@ -474,13 +474,13 @@ with T_SIG:
             st.markdown(sig_html + "</div>", unsafe_allow_html=True)
 
             fundamentals = {
-                "Market Cap":    f"${info.get('marketCap',0)/1e9:.1f}B" if info.get('marketCap') else "—",
-                "P/E Ratio":     f"{info.get('trailingPE',0):.1f}x"     if info.get('trailingPE') else "—",
-                "EPS (TTM)":     f"${info.get('trailingEps',0):.2f}"    if info.get('trailingEps') else "—",
-                "Revenue":       f"${info.get('totalRevenue',0)/1e9:.1f}B" if info.get('totalRevenue') else "—",
-                "Profit Margin": f"{info.get('profitMargins',0)*100:.1f}%" if info.get('profitMargins') else "—",
+                "Market Cap":    f"${info.get('marketCap',0)/1e9:.1f}B" if info.get('marketCap') else "â€”",
+                "P/E Ratio":     f"{info.get('trailingPE',0):.1f}x"     if info.get('trailingPE') else "â€”",
+                "EPS (TTM)":     f"${info.get('trailingEps',0):.2f}"    if info.get('trailingEps') else "â€”",
+                "Revenue":       f"${info.get('totalRevenue',0)/1e9:.1f}B" if info.get('totalRevenue') else "â€”",
+                "Profit Margin": f"{info.get('profitMargins',0)*100:.1f}%" if info.get('profitMargins') else "â€”",
                 "52W High": fp(hi52), "52W Low": fp(lo52),
-                "Beta":      f"{info.get('beta',0):.2f}"           if info.get('beta') else "—",
+                "Beta":      f"{info.get('beta',0):.2f}"           if info.get('beta') else "â€”",
                 "Div Yield": f"{info.get('dividendYield',0)*100:.2f}%" if info.get('dividendYield') else "0%",
                 "Volume":    f"{qd['vol']:,.0f}",
             }
@@ -526,7 +526,7 @@ with T_SIG:
                 if news:
                     st.markdown(
                         f"<div style='color:#A855F7;font-family:monospace;font-weight:bold;"
-                        f"font-size:11px;margin-bottom:6px'>📰 {screen_tk} NEWS</div>",
+                        f"font-size:11px;margin-bottom:6px'>ðŸ“° {screen_tk} NEWS</div>",
                         unsafe_allow_html=True
                     )
                     for item in news[:6]:
@@ -547,11 +547,11 @@ with T_SIG:
         else:
             st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period.")
 
-# ════════════════════════════════════════════════════════════
-#  TAB 3 — CHART ANALYZER (up to 3 tickers)
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 3 â€” CHART ANALYZER (up to 3 tickers)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_CHART:
-    st.markdown("<h4 style='color:#06B6D4;font-family:monospace;margin-bottom:10px'>📊 TECHNICAL CHART ANALYZER</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#06B6D4;font-family:monospace;margin-bottom:10px'>ðŸ“Š TECHNICAL CHART ANALYZER</h4>", unsafe_allow_html=True)
     cc1, cc2, cc3, cc4 = st.columns([2, 2, 2, 4])
     with cc1: tk1 = st.text_input("Ticker 1", value="SPY",  key="ch_tk1").upper().strip()
     with cc2: tk2 = st.text_input("Ticker 2", value="QQQ",  key="ch_tk2").upper().strip()
@@ -580,7 +580,7 @@ with T_CHART:
         last = float(df2["Close"].iloc[-1]); prev = float(df2["Close"].iloc[-2])
         chg  = last - prev; pct = chg/prev*100
         ct   = "#00FF41" if chg >= 0 else "#FF4444"
-        sg   = "▲" if chg >= 0 else "▼"
+        sg   = "â–²" if chg >= 0 else "â–¼"
 
         fig = make_subplots(rows=4, cols=1, shared_xaxes=True,
                             row_heights=[.50,.15,.18,.17], vertical_spacing=0.02)
@@ -630,9 +630,9 @@ with T_CHART:
             build_chart(tk, chart_per)
         st.markdown("<hr style='border-color:#111;margin:4px 0'>", unsafe_allow_html=True)
 
-# ════════════════════════════════════════════════════════════
-#  TAB 4 — FINANCE CALCULATOR (Options + CFA formulas)
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 4 â€” FINANCE CALCULATOR (Options + CFA formulas)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_CALC:
     st.markdown(
         "<div style='background:linear-gradient(135deg,#1E0A2E,#021B2E,#022C22);"
@@ -640,14 +640,14 @@ with T_CALC:
         "<span style='font-size:22px;font-weight:bold;font-family:monospace;"
         "background:linear-gradient(90deg,#A855F7,#06B6D4,#10B981);"
         "-webkit-background-clip:text;-webkit-text-fill-color:transparent'>"
-        "📐 FINANCE CALCULATOR</span>"
+        "ðŸ“ FINANCE CALCULATOR</span>"
         "<div style='color:#555;font-family:monospace;font-size:11px;margin-top:4px'>"
-        "Options Pricing (BS · MC · BT) + CFA Key Formulas Quick Reference"
+        "Options Pricing (BS Â· MC Â· BT) + CFA Key Formulas Quick Reference"
         "</div></div>",
         unsafe_allow_html=True
     )
 
-    calc_t1, calc_t2 = st.tabs(["⚙️ OPTIONS PRICER", "📚 CFA FORMULA SHEET"])
+    calc_t1, calc_t2 = st.tabs(["âš™ï¸ OPTIONS PRICER", "ðŸ“š CFA FORMULA SHEET"])
 
     with calc_t1:
         def panel_hdr(theme, subtitle):
@@ -670,15 +670,15 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            bs_St = st.number_input("📍 Spot",   0.01, value=10.0, step=0.5,  key="bs_St", format="%.2f")
-            bs_K  = st.number_input("🎯 Strike", 0.01, value=10.0, step=0.5,  key="bs_K",  format="%.2f")
-            bs_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.10, 0.01, key="bs_s", format="%.2f")
-            bs_T  = st.number_input("⏳ T (years)", 0.01, value=2.0, step=0.25, key="bs_T", format="%.2f")
-            bs_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bs_r", format="%.3f")
-            bs_q  = st.slider("💰 q Dividend",    0.0,  0.20, 0.0,  0.005, key="bs_q", format="%.3f")
+            bs_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="bs_St", format="%.2f")
+            bs_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="bs_K",  format="%.2f")
+            bs_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="bs_s", format="%.2f")
+            bs_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="bs_T", format="%.2f")
+            bs_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bs_r", format="%.3f")
+            bs_q  = st.slider("ðŸ’° q Dividend",    0.0,  0.20, 0.0,  0.005, key="bs_q", format="%.3f")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='bs-btn'>", unsafe_allow_html=True)
-            run_bs_btn = st.button("🔮 Price (BS)", key="run_bs", use_container_width=True)
+            run_bs_btn = st.button("ðŸ”® Price (BS)", key="run_bs", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         with oc2:
@@ -688,15 +688,15 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            mc_St = st.number_input("📍 Spot",   0.01, value=10.0, step=0.5,  key="mc_St", format="%.2f")
-            mc_K  = st.number_input("🎯 Strike", 0.01, value=10.0, step=0.5,  key="mc_K",  format="%.2f")
-            mc_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.10, 0.01, key="mc_s", format="%.2f")
-            mc_T  = st.number_input("⏳ T (years)", 0.01, value=2.0, step=0.25, key="mc_T", format="%.2f")
-            mc_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="mc_r", format="%.3f")
-            mc_rp = st.select_slider("🎰 Reps", [1000,5000,10000,50000,100000], value=10000, key="mc_rp")
+            mc_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="mc_St", format="%.2f")
+            mc_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="mc_K",  format="%.2f")
+            mc_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="mc_s", format="%.2f")
+            mc_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="mc_T", format="%.2f")
+            mc_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="mc_r", format="%.3f")
+            mc_rp = st.select_slider("ðŸŽ° Reps", [1000,5000,10000,50000,100000], value=10000, key="mc_rp")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='mc-btn'>", unsafe_allow_html=True)
-            run_mc_btn = st.button("🎲 Price (MC)", key="run_mc", use_container_width=True)
+            run_mc_btn = st.button("ðŸŽ² Price (MC)", key="run_mc", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         with oc3:
@@ -706,22 +706,22 @@ with T_CALC:
                 "border-top:none;border-radius:0 0 8px 8px;padding:14px'>",
                 unsafe_allow_html=True
             )
-            bt_St = st.number_input("📍 Spot",   0.01, value=10.0, step=0.5,  key="bt_St", format="%.2f")
-            bt_K  = st.number_input("🎯 Strike", 0.01, value=10.0, step=0.5,  key="bt_K",  format="%.2f")
-            bt_s  = st.slider("📊 σ Volatility", 0.01, 2.0, 0.10, 0.01, key="bt_s", format="%.2f")
-            bt_T  = st.number_input("⏳ T (years)", 0.01, value=2.0, step=0.25, key="bt_T", format="%.2f")
-            bt_r  = st.slider("🏦 r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bt_r", format="%.3f")
-            bt_N  = st.select_slider("🌿 Steps N", [50,100,200,500,1000], value=100, key="bt_N")
+            bt_St = st.number_input("ðŸ“ Spot",   0.01, value=10.0, step=0.5,  key="bt_St", format="%.2f")
+            bt_K  = st.number_input("ðŸŽ¯ Strike", 0.01, value=10.0, step=0.5,  key="bt_K",  format="%.2f")
+            bt_s  = st.slider("ðŸ“Š Ïƒ Volatility", 0.01, 2.0, 0.10, 0.01, key="bt_s", format="%.2f")
+            bt_T  = st.number_input("â³ T (years)", 0.01, value=2.0, step=0.25, key="bt_T", format="%.2f")
+            bt_r  = st.slider("ðŸ¦ r Risk-Free",   0.0,  0.30, 0.10, 0.005, key="bt_r", format="%.3f")
+            bt_N  = st.select_slider("ðŸŒ¿ Steps N", [50,100,200,500,1000], value=100, key="bt_N")
             st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("<div class='bt-btn'>", unsafe_allow_html=True)
-            run_bt_btn = st.button("🌳 Price (BT)", key="run_bt", use_container_width=True)
+            run_bt_btn = st.button("ðŸŒ³ Price (BT)", key="run_bt", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         _, mid_col, _ = st.columns([2,3,2])
         with mid_col:
             st.markdown("<div class='all-btn'>", unsafe_allow_html=True)
-            run_all = st.button("⚡ COMPARE ALL 3 MODELS", key="run_all", use_container_width=True)
+            run_all = st.button("âš¡ COMPARE ALL 3 MODELS", key="run_all", use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         rb = rm = rt = None
@@ -785,7 +785,7 @@ with T_CALC:
                 fig.add_vline(x=mc_St, line=dict(color="#aaa",dash="dot",width=1.5),
                     annotation_text=f"St={mc_St}", annotation_font_color="#aaa")
                 fig.update_layout(**PLOT_CFG, height=320,
-                    title=dict(text="🎲 MC Terminal Price Distribution",
+                    title=dict(text="ðŸŽ² MC Terminal Price Distribution",
                                font=dict(family="Courier New",size=12,color=MC["primary"]),x=0))
                 fig.update_xaxes(gridcolor="#111"); fig.update_yaxes(gridcolor="#111")
                 st.plotly_chart(fig, use_container_width=True)
@@ -809,122 +809,122 @@ with T_CALC:
 
         cf1, cf2 = st.columns(2)
         with cf1:
-            st.markdown(cfa_section("📊 QUANTITATIVE METHODS", "#A855F7", [
-                ("Future Value",       "FV = PV × (1 + I/Y)ᴺ"),
-                ("Present Value",      "PV = FV / (1 + I/Y)ᴺ"),
+            st.markdown(cfa_section("ðŸ“Š QUANTITATIVE METHODS", "#A855F7", [
+                ("Future Value",       "FV = PV Ã— (1 + I/Y)á´º"),
+                ("Present Value",      "PV = FV / (1 + I/Y)á´º"),
                 ("Perpetuity PV",      "PV = PMT / discount rate"),
-                ("HPR",                "Rₜ = (Pₜ - Pₜ₋₁ + Dₜ) / Pₜ₋₁"),
-                ("Geometric Mean Ret", "R̄G = [(1+R₁)×…×(1+Rₙ)]^(1/n) - 1"),
-                ("Sharpe Ratio",       "(r̄p - rf) / σp"),
-                ("CV",                 "s / X̄"),
-                ("Z-Score",            "z = (x - μ) / σ"),
-                ("Confidence Interval","X̄ ± zα/2 × (σ/√n)"),
-                ("Correlation",        "corr(Ri,Rj) = COV(Ri,Rj) / [σ(Ri)×σ(Rj)]"),
+                ("HPR",                "Râ‚œ = (Pâ‚œ - Pâ‚œâ‚‹â‚ + Dâ‚œ) / Pâ‚œâ‚‹â‚"),
+                ("Geometric Mean Ret", "RÌ„G = [(1+Râ‚)Ã—â€¦Ã—(1+Râ‚™)]^(1/n) - 1"),
+                ("Sharpe Ratio",       "(rÌ„p - rf) / Ïƒp"),
+                ("CV",                 "s / XÌ„"),
+                ("Z-Score",            "z = (x - Î¼) / Ïƒ"),
+                ("Confidence Interval","XÌ„ Â± zÎ±/2 Ã— (Ïƒ/âˆšn)"),
+                ("Correlation",        "corr(Ri,Rj) = COV(Ri,Rj) / [Ïƒ(Ri)Ã—Ïƒ(Rj)]"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("💼 CORPORATE FINANCE", "#F59E0B", [
-                ("WACC",               "wd×kd×(1-t) + wps×kps + wce×ke"),
-                ("Cost of Equity CAPM","ke = RFR + β×(Rmkt - RFR)"),
-                ("Cost of Equity DDM", "ke = D₁/P₀ + g"),
-                ("NPV",                "CF₀ + CF₁/(1+k) + … + CFₙ/(1+k)ⁿ"),
-                ("IRR",                "Discount rate → NPV = 0"),
+            st.markdown(cfa_section("ðŸ’¼ CORPORATE FINANCE", "#F59E0B", [
+                ("WACC",               "wdÃ—kdÃ—(1-t) + wpsÃ—kps + wceÃ—ke"),
+                ("Cost of Equity CAPM","ke = RFR + Î²Ã—(Rmkt - RFR)"),
+                ("Cost of Equity DDM", "ke = Dâ‚/Pâ‚€ + g"),
+                ("NPV",                "CFâ‚€ + CFâ‚/(1+k) + â€¦ + CFâ‚™/(1+k)â¿"),
+                ("IRR",                "Discount rate â†’ NPV = 0"),
                 ("Breakeven Sales",    "(Fixed op + financing costs) / (P - VC/unit)"),
-                ("DOL",                "%ΔEBIT / %ΔSales"),
-                ("DFL",                "%ΔNet Income / %ΔEBIT"),
-                ("ROE (DuPont)",       "(Net Income/Sales) × (Sales/Assets) × (Assets/Equity)"),
-                ("g (growth rate)",    "g = RR × ROE"),
+                ("DOL",                "%Î”EBIT / %Î”Sales"),
+                ("DFL",                "%Î”Net Income / %Î”EBIT"),
+                ("ROE (DuPont)",       "(Net Income/Sales) Ã— (Sales/Assets) Ã— (Assets/Equity)"),
+                ("g (growth rate)",    "g = RR Ã— ROE"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("🏦 FIXED INCOME", "#06B6D4", [
-                ("Bond Price",         "PV = Σ[C/(1+r)ᵗ] + F/(1+r)ᴺ"),
+            st.markdown(cfa_section("ðŸ¦ FIXED INCOME", "#06B6D4", [
+                ("Bond Price",         "PV = Î£[C/(1+r)áµ—] + F/(1+r)á´º"),
                 ("Current Yield",      "Annual coupon / Price"),
                 ("YTM approx",         "(C + (F-P)/N) / ((F+P)/2)"),
-                ("Duration (Macaulay)","Σ[t × PV(CFt)] / Bond Price"),
+                ("Duration (Macaulay)","Î£[t Ã— PV(CFt)] / Bond Price"),
                 ("Modified Duration",  "Macaulay D / (1+r)"),
-                ("%ΔPrice (Duration)", "≈ -ModDur × Δy"),
-                ("Convexity adj.",     "½ × Convexity × (Δy)²"),
-                ("Forward Rate",       "(1+Sₙ)ⁿ = (1+Sₙ₋₁)ⁿ⁻¹ × (1+fn)"),
-                ("Spot-Forward",       "(1+S₂)² = (1+S₁)(1+1y1y)"),
+                ("%Î”Price (Duration)", "â‰ˆ -ModDur Ã— Î”y"),
+                ("Convexity adj.",     "Â½ Ã— Convexity Ã— (Î”y)Â²"),
+                ("Forward Rate",       "(1+Sâ‚™)â¿ = (1+Sâ‚™â‚‹â‚)â¿â»Â¹ Ã— (1+fn)"),
+                ("Spot-Forward",       "(1+Sâ‚‚)Â² = (1+Sâ‚)(1+1y1y)"),
                 ("OAS",                "Z-spread adjusted for embedded options"),
             ]), unsafe_allow_html=True)
 
         with cf2:
-            st.markdown(cfa_section("📈 EQUITY INVESTMENTS", "#10B981", [
-                ("Gordon Growth Model", "V₀ = D₁ / (ke - gc)"),
-                ("Multi-stage DDM",     "V₀ = Σ Dₙ/(1+ke)ⁿ + Pₙ/(1+ke)ⁿ"),
+            st.markdown(cfa_section("ðŸ“ˆ EQUITY INVESTMENTS", "#10B981", [
+                ("Gordon Growth Model", "Vâ‚€ = Dâ‚ / (ke - gc)"),
+                ("Multi-stage DDM",     "Vâ‚€ = Î£ Dâ‚™/(1+ke)â¿ + Pâ‚™/(1+ke)â¿"),
                 ("Leading P/E",         "Price / Forecast EPS next 12mo"),
                 ("Trailing P/E",        "Price / EPS previous 12mo"),
                 ("P/B",                 "Price / Book Value per share"),
                 ("EV/EBITDA",           "(Mkt Cap + Debt - Cash) / EBITDA"),
                 ("Basic EPS",           "(Net Income - Pref Div) / Wtd Avg Shares"),
                 ("Diluted EPS",         "Adj. income / (Wtd Avg + Dilutive shares)"),
-                ("CAPM",               "E(Ri) = RFR + βᵢ×[E(Rmkt) - RFR]"),
-                ("Beta (unlever)",      "βasset = βequity / [1+(1-t)×D/E]"),
+                ("CAPM",               "E(Ri) = RFR + Î²áµ¢Ã—[E(Rmkt) - RFR]"),
+                ("Beta (unlever)",      "Î²asset = Î²equity / [1+(1-t)Ã—D/E]"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("🔗 PORTFOLIO MANAGEMENT", "#EC4899", [
-                ("E(Rp) 2-stock",       "wA×E(RA) + wB×E(RB)"),
-                ("Var(Rp) 2-stock",     "wA²σA² + wB²σB² + 2wAwBσAσBρAB"),
+            st.markdown(cfa_section("ðŸ”— PORTFOLIO MANAGEMENT", "#EC4899", [
+                ("E(Rp) 2-stock",       "wAÃ—E(RA) + wBÃ—E(RB)"),
+                ("Var(Rp) 2-stock",     "wAÂ²ÏƒAÂ² + wBÂ²ÏƒBÂ² + 2wAwBÏƒAÏƒBÏAB"),
                 ("Total Risk",          "Systematic + Unsystematic"),
-                ("Sharpe",              "(rp - rf) / σp  [total risk]"),
-                ("Treynor",             "(rp - rf) / βp  [systematic risk]"),
-                ("Jensen's Alpha",      "αp = rp - [rf + βp(rm - rf)]"),
-                ("M-squared",           "(rp - rf) × (σm/σp) - (rm - rf)"),
-                ("Roy Safety-First",    "SFR = (rp - rTarget) / σp"),
+                ("Sharpe",              "(rp - rf) / Ïƒp  [total risk]"),
+                ("Treynor",             "(rp - rf) / Î²p  [systematic risk]"),
+                ("Jensen's Alpha",      "Î±p = rp - [rf + Î²p(rm - rf)]"),
+                ("M-squared",           "(rp - rf) Ã— (Ïƒm/Ïƒp) - (rm - rf)"),
+                ("Roy Safety-First",    "SFR = (rp - rTarget) / Ïƒp"),
                 ("Information Ratio",   "(rp - rB) / Tracking Error"),
-                ("CAL Slope",           "(E(Rp) - Rf) / σp"),
+                ("CAL Slope",           "(E(Rp) - Rf) / Ïƒp"),
             ]), unsafe_allow_html=True)
 
-            st.markdown(cfa_section("⚙️ DERIVATIVES", "#F59E0B", [
-                ("Put-Call Parity",     "c + X/(1+Rf)ᵀ = S + p"),
-                ("BS d1",               "[ln(S/K)+(r+σ²/2)T] / (σ√T)"),
-                ("BS d2",               "d1 - σ√T"),
-                ("BS Call",             "S×N(d1) - Ke⁻ʳᵀ×N(d2)"),
-                ("BS Put",              "Ke⁻ʳᵀ×N(-d2) - S×N(-d1)"),
+            st.markdown(cfa_section("âš™ï¸ DERIVATIVES", "#F59E0B", [
+                ("Put-Call Parity",     "c + X/(1+Rf)áµ€ = S + p"),
+                ("BS d1",               "[ln(S/K)+(r+ÏƒÂ²/2)T] / (ÏƒâˆšT)"),
+                ("BS d2",               "d1 - ÏƒâˆšT"),
+                ("BS Call",             "SÃ—N(d1) - Keâ»Ê³áµ€Ã—N(d2)"),
+                ("BS Put",              "Keâ»Ê³áµ€Ã—N(-d2) - SÃ—N(-d1)"),
                 ("Delta Call",          "N(d1)"),
                 ("Delta Put",           "N(d1) - 1"),
-                ("Gamma",               "N'(d1) / (S×σ×√T)"),
-                ("Vega",                "S×N'(d1)×√T"),
-                ("Forward Value",       "Vt = St - F₀(T)×e⁻ʳ⁽ᵀ⁻ᵗ⁾"),
+                ("Gamma",               "N'(d1) / (SÃ—ÏƒÃ—âˆšT)"),
+                ("Vega",                "SÃ—N'(d1)Ã—âˆšT"),
+                ("Forward Value",       "Vt = St - Fâ‚€(T)Ã—eâ»Ê³â½áµ€â»áµ—â¾"),
             ]), unsafe_allow_html=True)
 
-# ════════════════════════════════════════════════════════════
-#  TAB 5 — CFO CALCULATORS
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 5 â€” CFO CALCULATORS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_CFO:
     st.markdown(
-        f"<h4 style='color:{CF['primary']};font-family:monospace'>💼 CFO FINANCIAL TOOLKIT</h4>",
+        f"<h4 style='color:{CF['primary']};font-family:monospace'>ðŸ’¼ CFO FINANCIAL TOOLKIT</h4>",
         unsafe_allow_html=True
     )
-    cfo1, cfo2 = st.tabs(["📊 DCF VALUATION", "⚖️ WACC CALCULATOR"])
+    cfo1, cfo2 = st.tabs(["ðŸ“Š DCF VALUATION", "âš–ï¸ WACC CALCULATOR"])
 
     with cfo1:
         st.markdown(
             f"<div style='background:{CF['dark']};border:1px solid {CF['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "📊 DISCOUNTED CASH FLOW (DCF) VALUATION MODEL</div>"
+            "ðŸ“Š DISCOUNTED CASH FLOW (DCF) VALUATION MODEL</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Projects FCFs and discounts at WACC · terminal value · equity intrinsic value · sensitivity table"
+            "Projects FCFs and discounts at WACC Â· terminal value Â· equity intrinsic value Â· sensitivity table"
             "</div></div>",
             unsafe_allow_html=True
         )
         d1a, d1b, d1c = st.columns(3)
         with d1a:
-            dcf_fcf    = st.number_input("💵 Base FCF ($M)",      value=500.0, step=50.0, key="dcf_fcf",    format="%.1f")
-            dcf_gr1    = st.slider("📈 Growth Yr 1-5 (%)",        0.0, 50.0, 15.0, 0.5, key="dcf_gr1",   format="%.1f")
-            dcf_gr2    = st.slider("📈 Growth Yr 6-10 (%)",       0.0, 30.0, 8.0,  0.5, key="dcf_gr2",   format="%.1f")
+            dcf_fcf    = st.number_input("ðŸ’µ Base FCF ($M)",      value=500.0, step=50.0, key="dcf_fcf",    format="%.1f")
+            dcf_gr1    = st.slider("ðŸ“ˆ Growth Yr 1-5 (%)",        0.0, 50.0, 15.0, 0.5, key="dcf_gr1",   format="%.1f")
+            dcf_gr2    = st.slider("ðŸ“ˆ Growth Yr 6-10 (%)",       0.0, 30.0, 8.0,  0.5, key="dcf_gr2",   format="%.1f")
         with d1b:
-            dcf_tgr    = st.slider("♾️ Terminal Growth (%)",      0.0, 5.0,  2.5,  0.1, key="dcf_tgr",   format="%.1f")
-            dcf_wacc   = st.slider("⚖️ WACC (%)",                 1.0, 25.0, 10.0, 0.25,key="dcf_wacc",  format="%.2f")
-            dcf_debt   = st.number_input("🏦 Net Debt ($M)",      value=200.0, step=10.0, key="dcf_debt", format="%.1f")
+            dcf_tgr    = st.slider("â™¾ï¸ Terminal Growth (%)",      0.0, 5.0,  2.5,  0.1, key="dcf_tgr",   format="%.1f")
+            dcf_wacc   = st.slider("âš–ï¸ WACC (%)",                 1.0, 25.0, 10.0, 0.25,key="dcf_wacc",  format="%.2f")
+            dcf_debt   = st.number_input("ðŸ¦ Net Debt ($M)",      value=200.0, step=10.0, key="dcf_debt", format="%.1f")
         with d1c:
-            dcf_shares = st.number_input("📋 Shares Out (M)",     value=100.0, step=5.0,  key="dcf_sh",   format="%.1f")
-            dcf_cash   = st.number_input("💰 Cash ($M)",          value=150.0, step=10.0, key="dcf_cash", format="%.1f")
-            dcf_mos    = st.slider("🎯 Margin of Safety (%)",     0.0, 40.0, 20.0, 5.0, key="dcf_mos",  format="%.0f")
+            dcf_shares = st.number_input("ðŸ“‹ Shares Out (M)",     value=100.0, step=5.0,  key="dcf_sh",   format="%.1f")
+            dcf_cash   = st.number_input("ðŸ’° Cash ($M)",          value=150.0, step=10.0, key="dcf_cash", format="%.1f")
+            dcf_mos    = st.slider("ðŸŽ¯ Margin of Safety (%)",     0.0, 40.0, 20.0, 5.0, key="dcf_mos",  format="%.0f")
 
         st.markdown("<div class='cf-btn'>", unsafe_allow_html=True)
-        run_dcf = st.button("💼 Run DCF", key="run_dcf")
+        run_dcf = st.button("ðŸ’¼ Run DCF", key="run_dcf")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_dcf:
@@ -968,7 +968,7 @@ with T_CFO:
                 text=[f"${v:,.0f}M" for v in vals], textposition="auto",
                 textfont=dict(family="Courier New",size=9)))
             fig.update_layout(**PLOT_CFG, height=360,
-                title=dict(text="💼 DCF Cash Flow Breakdown",
+                title=dict(text="ðŸ’¼ DCF Cash Flow Breakdown",
                            font=dict(family="Courier New",size=13,color=CF["primary"]),x=0))
             fig.update_xaxes(gridcolor="#111",title_text="Period")
             fig.update_yaxes(gridcolor="#111",title_text="PV ($M)")
@@ -976,7 +976,7 @@ with T_CFO:
 
             st.markdown(
                 f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;"
-                "margin:10px 0 6px'>📊 SENSITIVITY — Intrinsic Value vs WACC & Terminal Growth</div>",
+                "margin:10px 0 6px'>ðŸ“Š SENSITIVITY â€” Intrinsic Value vs WACC & Terminal Growth</div>",
                 unsafe_allow_html=True
             )
             waccs = [wacc_d-0.02, wacc_d-0.01, wacc_d, wacc_d+0.01, wacc_d+0.02]
@@ -985,7 +985,7 @@ with T_CFO:
             for tg in tgrs:
                 row = {}
                 for wc in waccs:
-                    if wc <= tg: row[f"WACC {wc:.1%}"] = "∞"
+                    if wc <= tg: row[f"WACC {wc:.1%}"] = "âˆž"
                     else:
                         fcf2 = dcf_fcf; pv2 = 0
                         for yr in range(1,11):
@@ -1003,26 +1003,26 @@ with T_CFO:
             f"<div style='background:{CF['dark']};border:1px solid {CF['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{CF['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "⚖️ WACC — WEIGHTED AVERAGE COST OF CAPITAL</div>"
+            "âš–ï¸ WACC â€” WEIGHTED AVERAGE COST OF CAPITAL</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "WACC = (E/V)×Re + (D/V)×Rd×(1−Tc)"
+            "WACC = (E/V)Ã—Re + (D/V)Ã—RdÃ—(1âˆ’Tc)"
             "</div></div>",
             unsafe_allow_html=True
         )
         w1, w2, w3 = st.columns(3)
         with w1:
-            wacc_e    = st.number_input("💹 Equity ($M)",     value=800.0, step=50.0, key="wacc_e",    format="%.1f")
-            wacc_d_v  = st.number_input("🏦 Debt ($M)",       value=200.0, step=50.0, key="wacc_d_v",  format="%.1f")
-            wacc_rf   = st.slider("🏛️ Risk-Free Rate (%)",    0.0,10.0, 4.5, 0.1, key="wacc_rf",  format="%.1f")
+            wacc_e    = st.number_input("ðŸ’¹ Equity ($M)",     value=800.0, step=50.0, key="wacc_e",    format="%.1f")
+            wacc_d_v  = st.number_input("ðŸ¦ Debt ($M)",       value=200.0, step=50.0, key="wacc_d_v",  format="%.1f")
+            wacc_rf   = st.slider("ðŸ›ï¸ Risk-Free Rate (%)",    0.0,10.0, 4.5, 0.1, key="wacc_rf",  format="%.1f")
         with w2:
-            wacc_beta = st.slider("📊 Beta",                  0.1, 3.0, 1.2, 0.05,key="wacc_beta",format="%.2f")
-            wacc_erp  = st.slider("📈 Equity Risk Premium (%)",3.0,10.0, 5.5, 0.1, key="wacc_erp", format="%.1f")
-            wacc_rd   = st.slider("💳 Cost of Debt (%)",      1.0,15.0, 5.0, 0.25,key="wacc_rd",  format="%.2f")
+            wacc_beta = st.slider("ðŸ“Š Beta",                  0.1, 3.0, 1.2, 0.05,key="wacc_beta",format="%.2f")
+            wacc_erp  = st.slider("ðŸ“ˆ Equity Risk Premium (%)",3.0,10.0, 5.5, 0.1, key="wacc_erp", format="%.1f")
+            wacc_rd   = st.slider("ðŸ’³ Cost of Debt (%)",      1.0,15.0, 5.0, 0.25,key="wacc_rd",  format="%.2f")
         with w3:
-            wacc_tc   = st.slider("🏛️ Tax Rate (%)",          0.0,40.0,21.0, 0.5, key="wacc_tc",  format="%.1f")
+            wacc_tc   = st.slider("ðŸ›ï¸ Tax Rate (%)",          0.0,40.0,21.0, 0.5, key="wacc_tc",  format="%.1f")
 
         st.markdown("<div class='cf-btn'>", unsafe_allow_html=True)
-        run_wacc = st.button("⚖️ Calculate WACC", key="run_wacc")
+        run_wacc = st.button("âš–ï¸ Calculate WACC", key="run_wacc")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_wacc:
@@ -1045,7 +1045,7 @@ with T_CFO:
                     unsafe_allow_html=True
                 )
             wbox(wc1,"WACC",          f"{WACC:.2%}",      "Blended rate",      CF["light"])
-            wbox(wc2,"Cost of Equity",f"{Re:.2%}",         "CAPM: Rf+β×ERP")
+            wbox(wc2,"Cost of Equity",f"{Re:.2%}",         "CAPM: Rf+Î²Ã—ERP")
             wbox(wc3,"Cost of Debt",  f"{Rd*(1-Tc):.2%}", "After-tax")
             wbox(wc4,"Equity Weight", f"{E_w:.1%}",        f"${wacc_e:,.0f}M")
             wbox(wc5,"Debt Weight",   f"{D_w:.1%}",        f"${wacc_d_v:,.0f}M")
@@ -1060,16 +1060,16 @@ with T_CFO:
             wacc_arr  = [E_w*(wacc_rf/100 + b*(wacc_erp/100)) + D_w*Rd*(1-Tc) for b in betas_arr]
             fig.add_trace(go.Scatter(
                 x=betas_arr, y=[w*100 for w in wacc_arr],
-                line=dict(color=CF["primary"],width=2.5), name="WACC vs β"
+                line=dict(color=CF["primary"],width=2.5), name="WACC vs Î²"
             ), row=1, col=2)
             curr_wacc = E_w*(wacc_rf/100 + wacc_beta*(wacc_erp/100)) + D_w*Rd*(1-Tc)
             fig.add_trace(go.Scatter(
                 x=[wacc_beta], y=[curr_wacc*100],
                 mode="markers+text",
                 marker=dict(color="#FFD700",size=12,symbol="diamond"),
-                text=[f"β={wacc_beta}"], textposition="top center",
+                text=[f"Î²={wacc_beta}"], textposition="top center",
                 textfont=dict(family="Courier New",color="#FFD700"),
-                name=f"β={wacc_beta}"
+                name=f"Î²={wacc_beta}"
             ), row=1, col=2)
             fig.update_layout(**PLOT_CFG, height=360,
                 legend=dict(font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
@@ -1077,41 +1077,41 @@ with T_CFO:
             fig.update_yaxes(gridcolor="#111",title_text="WACC (%)", row=1, col=2)
             st.plotly_chart(fig, use_container_width=True)
 
-# ════════════════════════════════════════════════════════════
-#  TAB 6 — QUANT LAB
-# ════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  TAB 6 â€” QUANT LAB
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 with T_QUANT:
     st.markdown(
-        f"<h4 style='color:{QT['primary']};font-family:monospace'>🔬 QUANT LAB — RISK & PORTFOLIO ANALYTICS</h4>",
+        f"<h4 style='color:{QT['primary']};font-family:monospace'>ðŸ”¬ QUANT LAB â€” RISK & PORTFOLIO ANALYTICS</h4>",
         unsafe_allow_html=True
     )
-    q1tab, q2tab = st.tabs(["📉 VaR & RISK METRICS", "🔗 MARKOWITZ OPTIMIZER"])
+    q1tab, q2tab = st.tabs(["ðŸ“‰ VaR & RISK METRICS", "ðŸ”— MARKOWITZ OPTIMIZER"])
 
-    # ── VaR ──────────────────────────────────────────────────
+    # â”€â”€ VaR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     with q1tab:
         st.markdown(
             f"<div style='background:{QT['dark']};border:1px solid {QT['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "📉 VALUE AT RISK (VaR) + CVaR / ES — Risk Measurement Suite</div>"
+            "ðŸ“‰ VALUE AT RISK (VaR) + CVaR / ES â€” Risk Measurement Suite</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
-            "Parametric · Historical · Monte Carlo VaR · CVaR/ES · Sharpe · Sortino · Calmar"
+            "Parametric Â· Historical Â· Monte Carlo VaR Â· CVaR/ES Â· Sharpe Â· Sortino Â· Calmar"
             "</div></div>",
             unsafe_allow_html=True
         )
         vq1, vq2, vq3 = st.columns(3)
         with vq1:
-            var_tk  = st.text_input("📍 Ticker", value="SPY", key="var_tk").upper().strip()
-            var_per = st.selectbox("📅 Period", ["1y","2y","3y","5y"], index=1, key="var_per")
+            var_tk  = st.text_input("ðŸ“ Ticker", value="SPY", key="var_tk").upper().strip()
+            var_per = st.selectbox("ðŸ“… Period", ["1y","2y","3y","5y"], index=1, key="var_per")
         with vq2:
-            var_port = st.number_input("💵 Portfolio ($)", value=1000000.0, step=50000.0, key="var_port", format="%.0f")
-            var_conf = st.select_slider("🎯 Confidence Level", [0.90,0.95,0.99], value=0.95, key="var_conf")
+            var_port = st.number_input("ðŸ’µ Portfolio ($)", value=1000000.0, step=50000.0, key="var_port", format="%.0f")
+            var_conf = st.select_slider("ðŸŽ¯ Confidence Level", [0.90,0.95,0.99], value=0.95, key="var_conf")
         with vq3:
-            var_hrz = st.select_slider("📆 Horizon (days)", [1,5,10,20,30,60], value=1, key="var_hrz")
-            var_rf2 = st.slider("🏛️ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="var_rf2", format="%.1f")
+            var_hrz = st.select_slider("ðŸ“† Horizon (days)", [1,5,10,20,30,60], value=1, key="var_hrz")
+            var_rf2 = st.slider("ðŸ›ï¸ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="var_rf2", format="%.1f")
 
         st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
-        run_var = st.button("📉 Calculate VaR & Risk", key="run_var")
+        run_var = st.button("ðŸ“‰ Calculate VaR & Risk", key="run_var")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_var:
@@ -1193,13 +1193,13 @@ with T_QUANT:
             else:
                 st.warning("Not enough data for VaR calculation. Try a different ticker or longer period.")
 
-    # ── Markowitz ────────────────────────────────────────────
+    # â”€â”€ Markowitz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     with q2tab:
         st.markdown(
             f"<div style='background:{QT['dark']};border:1px solid {QT['border']};"
             "border-radius:8px;padding:14px;margin-bottom:14px'>"
             f"<div style='color:{QT['primary']};font-family:monospace;font-weight:bold;margin-bottom:4px'>"
-            "🔗 MEAN-VARIANCE PORTFOLIO OPTIMIZER — Efficient Frontier</div>"
+            "ðŸ”— MEAN-VARIANCE PORTFOLIO OPTIMIZER â€” Efficient Frontier</div>"
             "<div style='color:#555;font-family:monospace;font-size:11px'>"
             "Upload tickers, estimate return/cov, compute min variance & max Sharpe portfolios, plot frontier"
             "</div></div>",
@@ -1209,17 +1209,17 @@ with T_QUANT:
         mq1, mq2 = st.columns([3,2])
         with mq1:
             tickers_str = st.text_input(
-                "📋 Tickers (comma-separated)", 
+                "ðŸ“‹ Tickers (comma-separated)", 
                 value="SPY, QQQ, IWM, EFA, EEM, TLT",
                 key="m_tks"
             )
-            per_m = st.selectbox("📅 Lookback", ["1y","3y","5y"], index=1, key="m_per")
+            per_m = st.selectbox("ðŸ“… Lookback", ["1y","3y","5y"], index=1, key="m_per")
         with mq2:
-            rf_m = st.slider("🏛️ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="m_rf", format="%.1f")
-            pts_m= st.slider("📈 Frontier Points", 20, 200, 80, 10, key="m_pts")
+            rf_m = st.slider("ðŸ›ï¸ Risk-Free Rate (%)", 0.0, 10.0, 4.5, 0.1, key="m_rf", format="%.1f")
+            pts_m= st.slider("ðŸ“ˆ Frontier Points", 20, 200, 80, 10, key="m_pts")
 
         st.markdown("<div class='qt-btn'>", unsafe_allow_html=True)
-        run_mpt = st.button("🔗 Run Markowitz Optimization", key="run_mpt")
+        run_mpt = st.button("ðŸ”— Run Markowitz Optimization", key="run_mpt")
         st.markdown("</div>", unsafe_allow_html=True)
 
         if run_mpt:
@@ -1279,11 +1279,11 @@ with T_QUANT:
                             marker=dict(size=11,color="#F59E0B",symbol="star")
                         ))
                         fig.update_layout(**PLOT_CFG, height=420,
-                            title=dict(text="🔗 Efficient Frontier & Key Portfolios",
+                            title=dict(text="ðŸ”— Efficient Frontier & Key Portfolios",
                                        font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
                             legend=dict(orientation="h",x=0,y=1.05,
                                         font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
-                        fig.update_xaxes(gridcolor="#111",title_text="Volatility (σ)")
+                        fig.update_xaxes(gridcolor="#111",title_text="Volatility (Ïƒ)")
                         fig.update_yaxes(gridcolor="#111",title_text="Expected Return")
                         st.plotly_chart(fig, use_container_width=True)
 
@@ -1311,7 +1311,7 @@ with T_QUANT:
                             line=dict(width=2.3,color=QT["primary"])
                         ))
                         fig2.update_layout(**PLOT_CFG, height=420,
-                            title=dict(text="📈 Growth of $1 — Max Sharpe vs Constituents",
+                            title=dict(text="ðŸ“ˆ Growth of $1 â€” Max Sharpe vs Constituents",
                                        font=dict(family="Courier New",size=13,color=QT["primary"]),x=0),
                             legend=dict(orientation="h",x=0,y=1.05,
                                         font=dict(family="Courier New",size=10),bgcolor="rgba(0,0,0,0)"))
