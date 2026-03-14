@@ -267,7 +267,7 @@ T_MKT, T_SIG, T_CHART, T_CALC, T_CFO, T_QUANT = st.tabs([
     "📊 CHART ANALYZER",
     "📐 FINANCE CALCULATOR",
     "💼 CFO CALCULATORS",
-    "🔬 QUANT LAB",
+    "🎯 MARKOWITZ PORTFOLIO",
 ])
 
 
@@ -1581,7 +1581,7 @@ with T_CFO:
 # ══════════════════════════════════════════════════════════════
 with T_QUANT:
     st.markdown(
-        f"<h4 style='color:{QT['primary']};font-family:monospace'>🔬 QUANT LAB — FULL MARKOWITZ PORTFOLIO ENGINE</h4>",
+        f"<h4 style='color:{QT['primary']};font-family:monospace'>🎯 MARKOWITZ PORTFOLIO — FULL MARKOWITZ PORTFOLIO ENGINE</h4>",
         unsafe_allow_html=True
     )
  
