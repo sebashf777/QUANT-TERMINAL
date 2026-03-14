@@ -1157,5 +1157,5 @@ with T_QUANT:
                 rbox(rc6,"Sortino",    f"{sortino:.3f}", "downside only")
 
                 rc7,rc8,rc9,rc10 = st.columns(4)
-                rbox(rc7, "Ann Return",   f"{ann_r:.2%}", "", "#00FF41" if ann_r
+                rbox(rc7, "Ann Return",   f"{ann_r:.2%}", "", "#00FF41" if ann_r)
 
