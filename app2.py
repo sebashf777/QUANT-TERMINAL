@@ -381,7 +381,7 @@ with T_MKT:
         )
         st.markdown(
             "<div style='background:#0D0D0D;border:1px solid #1a1a1a;border-radius:8px;padding:12px;margin-bottom:10px'>"
-            "<div style='color:#06B6D4;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>ðŸ“… ECONOMIC CALENDAR</div>"
+            "<div style='color:#06B6D4;font-family:monospace;font-weight:bold;font-size:12px;margin-bottom:8px'>📅 ECONOMIC CALENDAR</div>"
             "<table style='width:100%;border-collapse:collapse;font-family:monospace'>"
             "<thead><tr>"
             "<td style='color:#555;padding:4px 8px;font-size:10px'>EVENT</td>"
