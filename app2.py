@@ -455,7 +455,7 @@ with T_SIG:
             bull = sum(1 for _, c2 in signals if "#00FF41" in c2)
             bear = sum(1 for _, c2 in signals if "#FF4444" in c2)
             sc_col = "#00FF41" if bull > bear else ("#FF4444" if bear > bull else "#F59E0B")
-            sc_lbl = "BULLISH ðŸ‚" if bull > bear else ("BEARISH ðŸ»" if bear > bull else "NEUTRAL âš–ï¸")
+            sc_lbl = "BULLISH ðŸ‚" if bull > bear else ("BEARISH 🐻" if bear > bull else "NEUTRAL âš–ï¸")
             chg_c  = "#00FF41" if qd["chg"] >= 0 else "#FF4444"
             chg_sg = "â–²" if qd["chg"] >= 0 else "â–¼"
             rsi_c  = "#FF4444" if rsi_val > 70 else ("#00FF41" if rsi_val < 30 else "#F59E0B")
