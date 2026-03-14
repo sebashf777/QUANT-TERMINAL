@@ -558,9 +558,9 @@ with T_SIG:
         else:
             st.warning(f"Not enough data for {screen_tk}. Try a different ticker or period.")
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  TAB 3 â€” CHART ANALYZER (up to 3 tickers)
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+#  TAB 3 📊” CHART ANALYZER (up to 3 tickers)
+
 with T_CHART:
     st.markdown("<h4 style='color:#06B6D4;font-family:monospace;margin-bottom:10px'>ðŸ“Š TECHNICAL CHART ANALYZER</h4>", unsafe_allow_html=True)
     cc1, cc2, cc3, cc4 = st.columns([2, 2, 2, 4])
